@@ -25,6 +25,14 @@ router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
 });
 
+router.get('/check-config', function(req, res, next) {
+  res.status(200).send({
+    SMOOCH_KEY_ID: SMOOCH_KEY_ID,
+    SMOOCH_KEY_SECRET: SMOOCH_KEY_SECRET,
+    KATABOT_TOKEN: KATABOT_TOKEN
+  })
+})
+
 router.get('/webhook', function(req, res, next) {
   console.log(req)
   console.log('GET')
