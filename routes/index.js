@@ -4,7 +4,6 @@ var SunshineConversationsClient = require('sunshine-conversations-client');
 var defaultClient = SunshineConversationsClient.ApiClient.instance;
 const axios = require('axios');
 
-// Configure HTTP basic authorization: basicAuth
 var basicAuth = defaultClient.authentications['basicAuth'];
 
 var SMOOCH_KEY_ID = process.env.SMOOCH_KEY_ID;
@@ -13,14 +12,9 @@ var SMOOCH_KEY_SECRET = process.env.SMOOCH_KEY_SECRET;
 basicAuth.username = SMOOCH_KEY_ID;
 basicAuth.password = SMOOCH_KEY_SECRET;
 
-// Uncomment this section to use JWTs instead
-// var bearerAuth = defaultClient.authentications['bearerAuth'];
-// bearerAuth.accessToken = 'YOUR_ACCESS_TOKEN';
-
 var KATABOT_TOKEN = process.env.BOT_TOKEN;
 let KATABOT_URL = 'https://kanal.kata.ai/receive_message/' + KATABOT_TOKEN;
 
-/* GET home page. */
 router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
 });
