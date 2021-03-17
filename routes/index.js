@@ -15,18 +15,6 @@ basicAuth.password = SMOOCH_KEY_SECRET;
 var KATABOT_TOKEN = process.env.BOT_TOKEN;
 let KATABOT_URL = 'https://kanal.kata.ai/receive_message/' + KATABOT_TOKEN;
 
-router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
-});
-
-router.get('/check-config', function(req, res, next) {
-  res.status(200).send({
-    SMOOCH_KEY_ID: SMOOCH_KEY_ID,
-    SMOOCH_KEY_SECRET: SMOOCH_KEY_SECRET,
-    KATABOT_TOKEN: KATABOT_TOKEN
-  })
-})
-
 router.get('/webhook', function(req, res, next) {
   console.log(req)
   console.log('GET')
@@ -35,7 +23,6 @@ router.get('/webhook', function(req, res, next) {
 
 router.post('/webhook', function(req, res, next) {
   var appId = req.body.app.id;
-
   req.body.events.forEach(event => {
     if (event.type != 'conversation:read') {
       console.log('WEBHOOK from Smooch');
@@ -60,7 +47,6 @@ router.post('/webhook', function(req, res, next) {
 
 router.post('/hook-from-kata', function(req, res, next) {
   console.log('HOOK-FROM-KATA');
-  // console.log(req.body)
   let userId = req.body.userId.split(':')[0];
   let appId = req.body.userId.split(':')[1];
   var convId = req.body.userId.split(':')[2];
