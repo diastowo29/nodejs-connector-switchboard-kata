@@ -16,13 +16,12 @@ var KATABOT_TOKEN = process.env.BOT_TOKEN;
 let KATABOT_URL = 'https://kanal.kata.ai/receive_message/' + KATABOT_TOKEN;
 
 router.get('/webhook', function(req, res, next) {
-  console.log(req)
-  console.log('GET')
   res.status(200).send({});
 })
 
 router.post('/webhook', function(req, res, next) {
   var appId = req.body.app.id;
+  console.log(req.body)
   req.body.events.forEach(event => {
     if (event.type != 'conversation:read') {
       console.log('WEBHOOK from Smooch');
