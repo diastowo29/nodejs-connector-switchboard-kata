@@ -16,8 +16,6 @@ var KATABOT_TOKEN = process.env.BOT_TOKEN;
 let KATABOT_URL = 'https://kanal.kata.ai/receive_message/' + KATABOT_TOKEN;
 
 router.get('/webhook', function(req, res, next) {
-  console.log(req)
-  console.log('GET')
   res.status(200).send({});
 })
 
