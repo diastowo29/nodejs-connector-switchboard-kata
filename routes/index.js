@@ -23,6 +23,7 @@ router.get('/webhook', function(req, res, next) {
 
 router.post('/webhook', function(req, res, next) {
   var appId = req.body.app.id;
+  console.log(req.body)
   req.body.events.forEach(event => {
     if (event.type != 'conversation:read') {
       console.log('WEBHOOK from Smooch');
