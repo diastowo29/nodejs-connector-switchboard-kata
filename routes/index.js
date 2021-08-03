@@ -31,13 +31,18 @@ router.post('/webhook', function(req, res, next) {
       console.log('Switchboard: ' + convSwitchboardName)
       var convChannel = event.payload.message.source.type;
       if (convSwitchboardName == 'bot') {
-        if (event.payload.message.author.type == "user") {
-          var messagePayload = event.payload.message;
-          var userIdForBot = messagePayload.author.userId + ':' + appId + ':' + convId;
-          if (messagePayload.content.type = 'text') {
-            sendToBot(userIdForBot, messagePayload.content.text);
-          }
-        }
+        
+        console.log('=== PASS CONTROL TO ZENDESK ===')
+        switchboardPassControl(appId, convId);
+
+        // if (event.payload.message.author.type == "user") {
+        //   var messagePayload = event.payload.message;
+        //   var userIdForBot = messagePayload.author.userId + ':' + appId + ':' + convId;
+        //   if (messagePayload.content.type = 'text') {
+        //     sendToBot(userIdForBot, messagePayload.content.text);
+        //   }
+        // }
+
       }
     }
   });
