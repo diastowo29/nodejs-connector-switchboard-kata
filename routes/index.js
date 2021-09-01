@@ -32,17 +32,16 @@ router.post('/webhook', function(req, res, next) {
       var convChannel = event.payload.message.source.type;
       if (convSwitchboardName == 'bot') {
         
-        // console.log('=== PASS CONTROL TO ZENDESK ===')
-        // switchboardPassControl(appId, convId);
+        console.log('=== PASS CONTROL TO ZENDESK ===')
+        switchboardPassControl(appId, convId);
 
-        if (event.payload.message.author.type == "user") {
-          var messagePayload = event.payload.message;
-          var userIdForBot = messagePayload.author.userId + ':' + appId + ':' + convId;
-          if (messagePayload.content.type = 'text') {
-            sendToBot(userIdForBot, messagePayload.content.text);
-          }
-        }
-
+      //   if (event.payload.message.author.type == "user") {
+      //     var messagePayload = event.payload.message;
+      //     var userIdForBot = messagePayload.author.userId + ':' + appId + ':' + convId;
+      //     if (messagePayload.content.type = 'text') {
+      //       sendToBot(userIdForBot, messagePayload.content.text);
+      //     }
+      //   }
       }
     }
   });
