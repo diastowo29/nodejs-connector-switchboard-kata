@@ -8,6 +8,7 @@ var basicAuth = defaultClient.authentications['basicAuth'];
 
 var SMOOCH_KEY_ID = process.env.SMOOCH_KEY_ID;
 var SMOOCH_KEY_SECRET = process.env.SMOOCH_KEY_SECRET;
+var BYPASS_ZD  = process.env.BYPASS_ZD;
 
 basicAuth.username = SMOOCH_KEY_ID;
 basicAuth.password = SMOOCH_KEY_SECRET;
@@ -32,16 +33,19 @@ router.post('/webhook', function(req, res, next) {
       var convChannel = event.payload.message.source.type;
       if (convSwitchboardName == 'bot') {
         
-        console.log('=== PASS CONTROL TO ZENDESK ===')
-        switchboardPassControl(appId, convId);
+        if (BYPASS_ZD) {
+          console.log('=== PASS CONTROL TO ZENDESK ===')
+          switchboardPassControl(appId, convId);
+        } else {
+            if (event.payload.message.author.type == "user") {
+              var messagePayload = event.payload.message;
+              var userIdForBot = messagePayload.author.userId + ':' + appId + ':' + convId;
+              if (messagePayload.content.type = 'text') {
+                sendToBot(userIdForBot, messagePayload.content.text);
+              }
+            }
+        }
 
-      //   if (event.payload.message.author.type == "user") {
-      //     var messagePayload = event.payload.message;
-      //     var userIdForBot = messagePayload.author.userId + ':' + appId + ':' + convId;
-      //     if (messagePayload.content.type = 'text') {
-      //       sendToBot(userIdForBot, messagePayload.content.text);
-      //     }
-      //   }
       }
     }
   });
