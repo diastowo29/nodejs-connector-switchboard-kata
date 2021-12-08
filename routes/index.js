@@ -9,6 +9,7 @@ var basicAuth = defaultClient.authentications['basicAuth'];
 var SMOOCH_KEY_ID = process.env.SMOOCH_KEY_ID;
 var SMOOCH_KEY_SECRET = process.env.SMOOCH_KEY_SECRET;
 var BYPASS_ZD  = process.env.BYPASS_ZD;
+var WA_ACTIVE_ACCOUNT;
 
 basicAuth.username = SMOOCH_KEY_ID;
 basicAuth.password = SMOOCH_KEY_SECRET;
