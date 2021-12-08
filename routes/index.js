@@ -72,6 +72,16 @@ router.post('/hook-from-kata', function(req, res, next) {
     }
   });
   res.status(200).send({});
+});
+
+router.post('/handover', function(req, res, next) {
+  let userId = req.body.userId.split(':')[0];
+  let appId = req.body.userId.split(':')[1];
+  var convId = req.body.userId.split(':')[2];
+  switchboardPassControl(appId, convId);
+  res.status(200).send({
+    status: 'ok'
+  })
 })
 
 function sendToBot (userId, chatContent) {
