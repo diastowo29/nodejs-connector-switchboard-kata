@@ -28,6 +28,7 @@ router.post('/webhook', function(req, res, next) {
       var convChannel = event.payload.message.source.type;
       var convIntegrationId = event.payload.message.source.integrationId;
       if (convChannel == 'whatsapp') {
+        console.log('== inbound message type: ' + convChannel + ' sw name: ' + event.payload.conversation.activeSwitchboardIntegration.name + ' integrationId: ' + convIntegrationId)
         if (WA_ACTIVE_ACCOUNT.includes(convIntegrationId)) {
           console.log(JSON.stringify(req.body))
           console.log('WEBHOOK from Smooch');
