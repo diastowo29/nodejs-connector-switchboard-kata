@@ -36,8 +36,6 @@ router.post('/webhook', function(req, res, next) {
           console.log(JSON.stringify(req.body))
           console.log('WEBHOOK from Smooch');
           console.log('User: ' + event.payload.message.author.displayName);
-          var convId = event.payload.conversation.id;
-          var convSwitchboardName = event.payload.conversation.activeSwitchboardIntegration.name;
           console.log('Switchboard: ' + convSwitchboardName)
           if (convSwitchboardName == 'bot') {
             if (BYPASS_ZD) {
