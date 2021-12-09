@@ -43,11 +43,17 @@ router.post('/webhook', function(req, res, next) {
                 if (event.payload.message.author.type == "user") {
                   var messagePayload = event.payload.message;
                   var userIdForBot = messagePayload.author.userId + ':' + appId + ':' + convId;
-                  if (messagePayload.content.type = 'text') {
-                    sendToBot(userIdForBot, messagePayload.content.text);
-                  }
+                  console.log('message to bot: ' + messagePayload.content.text);
+                  // if (messagePayload.content.type = 'text') {
+                  //   sendToBot(userIdForBot, messagePayload.content.text);
+                  // }
                 }
             }
+          }
+        } else {
+          if (convSwitchboardName == 'bot') {
+            console.log('-- unregistered account, pass to zd imidiately -- ')
+            switchboardPassControl(appId, convId);
           }
         }
       }
@@ -61,17 +67,17 @@ router.post('/hook-from-kata', function(req, res, next) {
   let userId = req.body.userId.split(':')[0];
   let appId = req.body.userId.split(':')[1];
   var convId = req.body.userId.split(':')[2];
-  var passToZd = false;
+  // var passToZd = false;
   req.body.messages.forEach(message => {
     if (message.action != 'action-promocarousel') {
-      if (message.action == 'action-escalate') {
-          passToZd = true;
-      }
+      // if (message.action == 'action-escalate') {
+      //     passToZd = true;
+      // }
       sendToSmooch(appId, convId, message.content);
-      if (passToZd) {
-        console.log('=== PASS CONTROL TO ZENDESK ===')
-        switchboardPassControl(appId, convId);
-      }
+      // if (passToZd) {
+      //   console.log('=== PASS CONTROL TO ZENDESK ===')
+      //   switchboardPassControl(appId, convId);
+      // }
     } else {
       sendCarouseltoSmooch(appId, convId, message.payload)
     }
