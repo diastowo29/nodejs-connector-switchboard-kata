@@ -31,32 +31,34 @@ router.post('/webhook', function(req, res, next) {
       if (convChannel == 'whatsapp') {
         console.log('== inbound message type: ' + convChannel + ' sw name: ' + event.payload.conversation.activeSwitchboardIntegration.name 
                     + ' integrationId: ' + convIntegrationId + ' active wa account: ' + WA_ACTIVE_ACCOUNT.includes(convIntegrationId) + ' author: ' + event.payload.message.author.displayName)
-        var convId = event.payload.conversation.id;
-        var convSwitchboardName = event.payload.conversation.activeSwitchboardIntegration.name;
-        if (WA_ACTIVE_ACCOUNT.includes(convIntegrationId)) {
-          console.log(JSON.stringify(req.body))
-          console.log('WEBHOOK from Smooch');
-          console.log('User: ' + event.payload.message.author.displayName);
-          console.log('Switchboard: ' + convSwitchboardName)
-          if (convSwitchboardName == 'bot') {
-            if (BYPASS_ZD) {
-              console.log('=== PASS CONTROL TO ZENDESK ===')
-              switchboardPassControl(appId, convId);
-            } else {
-                if (event.payload.message.author.type == "user") {
-                  var messagePayload = event.payload.message;
-                  var userIdForBot = messagePayload.author.userId + ':' + appId + ':' + convId;
-                  console.log('message to bot: ' + messagePayload.content.text);
-                  // if (messagePayload.content.type = 'text') {
-                  //   sendToBot(userIdForBot, messagePayload.content.text);
-                  // }
-                }
+        if ('activeSwitchboardIntegration' in event.payload.conversation) {
+          var convId = event.payload.conversation.id;
+          var convSwitchboardName = event.payload.conversation.activeSwitchboardIntegration.name;
+          if (WA_ACTIVE_ACCOUNT.includes(convIntegrationId)) {
+            console.log(JSON.stringify(req.body))
+            console.log('WEBHOOK from Smooch');
+            console.log('User: ' + event.payload.message.author.displayName);
+            console.log('Switchboard: ' + convSwitchboardName)
+            if (convSwitchboardName == 'bot') {
+              if (BYPASS_ZD) {
+                console.log('=== PASS CONTROL TO ZENDESK ===')
+                switchboardPassControl(appId, convId);
+              } else {
+                  if (event.payload.message.author.type == "user") {
+                    var messagePayload = event.payload.message;
+                    var userIdForBot = messagePayload.author.userId + ':' + appId + ':' + convId;
+                    console.log('message to bot: ' + messagePayload.content.text);
+                    // if (messagePayload.content.type = 'text') {
+                    //   sendToBot(userIdForBot, messagePayload.content.text);
+                    // }
+                  }
+              }
             }
-          }
-        } else {
-          if (convSwitchboardName == 'bot') {
-            console.log('-- unregistered account, pass to zd imidiately -- ')
-            switchboardPassControl(appId, convId);
+          } else {
+            if (convSwitchboardName == 'bot') {
+              console.log('-- unregistered account, pass to zd imidiately -- ')
+              switchboardPassControl(appId, convId);
+            }
           }
         }
       }
