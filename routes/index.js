@@ -23,15 +23,15 @@ router.get('/webhook', function(req, res, next) {
 
 router.post('/webhook', function(req, res, next) {
   var appId = req.body.app.id;
-  console.log(JSON.stringify(req.body))
+  // console.log(JSON.stringify(req.body))
   req.body.events.forEach(event => {
     if (event.type != 'conversation:read') {
       var convChannel = event.payload.message.source.type;
       var convIntegrationId = event.payload.message.source.integrationId;
       if (convChannel == 'whatsapp') {
-        console.log('== inbound message type: ' + convChannel + ' sw name: ' + event.payload.conversation.activeSwitchboardIntegration.name 
-                    + ' integrationId: ' + convIntegrationId + ' active wa account: ' + WA_ACTIVE_ACCOUNT.includes(convIntegrationId) + ' author: ' + event.payload.message.author.displayName)
         if ('activeSwitchboardIntegration' in event.payload.conversation) {
+          console.log('== inbound message type: ' + convChannel + ' sw name: ' + event.payload.conversation.activeSwitchboardIntegration.name 
+                      + ' integrationId: ' + convIntegrationId + ' active wa account: ' + WA_ACTIVE_ACCOUNT.includes(convIntegrationId) + ' author: ' + event.payload.message.author.displayName)
           var convId = event.payload.conversation.id;
           var convSwitchboardName = event.payload.conversation.activeSwitchboardIntegration.name;
           if (WA_ACTIVE_ACCOUNT.includes(convIntegrationId)) {
