@@ -10,6 +10,7 @@ var SMOOCH_KEY_ID = process.env.SMOOCH_KEY_ID;
 var SMOOCH_KEY_SECRET = process.env.SMOOCH_KEY_SECRET;
 var BYPASS_ZD  = process.env.BYPASS_ZD;
 var WA_ACTIVE_ACCOUNT = process.env.WA_ACTIVE_ACCOUNT;
+var BOT_ALIAS = process.env.BOT_ALIAS;
 
 basicAuth.username = SMOOCH_KEY_ID;
 basicAuth.password = SMOOCH_KEY_SECRET;
@@ -74,17 +75,18 @@ router.post('/hook-from-kata', function(req, res, next) {
   var convId = req.body.userId.split(':')[2];
   // var passToZd = false;
   req.body.messages.forEach(message => {
-    if (message.action != 'action-promocarousel') {
-      // if (message.action == 'action-escalate') {
-      //     passToZd = true;
-      // }
+    if (message.type == 'text') {
       sendToSmooch(appId, convId, message.content);
-      // if (passToZd) {
-      //   console.log('=== PASS CONTROL TO ZENDESK ===')
-      //   switchboardPassControl(appId, convId);
-      // }
     } else {
-      sendCarouseltoSmooch(appId, convId, message.payload)
+      if (message.payload.template_type == 'carousel') {
+        sendCarouseltoSmooch(appId, convId, message.payload);
+      } else if (message.payload.template_type == 'image') {
+        sendImagetoSmooch(appId, convId, message.payload);
+      } else if (message.payload.template_type == 'location') {
+        sendLocationtoSmooch(appId, convId, message.payload);
+      } else {
+        sendFiletoSmooch(appId, convId, message.payload);
+      }
     }
   });
   res.status(200).send({});
@@ -122,11 +124,76 @@ function sendToSmooch (appId, convId, messageContent) {
   var messagePost = new SunshineConversationsClient.MessagePost();
   messagePost.author = {
     type: 'business',
-    displayName: 'BOT'
+    displayName: BOT_ALIAS
   }
   messagePost.content = {
     type: 'text',
     text: messageContent
+  }
+
+  apiInstance.postMessage(appId, convId, messagePost).then(function(data) {
+    console.log('API POST Message called successfully. Returned data: ' + data);
+  }, function(error) {
+    console.error(error);
+  });
+}
+
+function sendImagetoSmooch (appId, convId, messagePayload) {
+  var apiInstance = new SunshineConversationsClient.MessagesApi();
+  var messagePost = new SunshineConversationsClient.MessagePost();
+  messagePost.author = {
+    type: 'business',
+    displayName: BOT_ALIAS
+  }
+  messagePost.content = {
+    type: 'image',
+    mediaUrl: messagePayload.items.originalContentUrl
+  }
+
+  apiInstance.postMessage(appId, convId, messagePost).then(function(data) {
+    console.log('API POST Message called successfully. Returned data: ' + data);
+  }, function(error) {
+    console.error(error);
+  });
+}
+
+function sendLocationtoSmooch (appId, convId, messagePayload) {
+  var apiInstance = new SunshineConversationsClient.MessagesApi();
+  var messagePost = new SunshineConversationsClient.MessagePost();
+  messagePost.author = {
+    type: 'business',
+    displayName: BOT_ALIAS
+  }
+  messagePost.content = {
+    type: 'location',
+    coordinates: {
+      lat: messagePayload.items.latitude,
+      long: messagePayload.items.longitude
+    },
+    location: {
+      address: messagePayload.items.address,
+      name: messagePayload.items.title
+    }
+  }
+
+  apiInstance.postMessage(appId, convId, messagePost).then(function(data) {
+    console.log('API POST Message called successfully. Returned data: ' + data);
+  }, function(error) {
+    console.error(error);
+  });
+}
+
+
+function sendFiletoSmooch (appId, convId, messagePayload) {
+  var apiInstance = new SunshineConversationsClient.MessagesApi();
+  var messagePost = new SunshineConversationsClient.MessagePost();
+  messagePost.author = {
+    type: 'business',
+    displayName: BOT_ALIAS
+  }
+  messagePost.content = {
+    type: 'file',
+    mediaUrl: messagePayload.items.originalContentUrl
   }
 
   apiInstance.postMessage(appId, convId, messagePost).then(function(data) {
@@ -141,16 +208,16 @@ function sendCarouseltoSmooch (appId, convId, messagePayload) {
   var messagePost = new SunshineConversationsClient.MessagePost();
   var carouselItems = [];
   messagePayload.items.forEach(carouselItem => {
-    var carouselActions = [];
+    var newCarouselActions = [];
     carouselItem.actions.forEach(carouselAction => {
       if (carouselAction.type == 'url') {
-        carouselActions.push({
+        newCarouselActions.push({
           text: carouselAction.label,
           type: 'link',
           uri: carouselAction.url
         })
       } else {
-        carouselActions.push({
+        newCarouselActions.push({
           text: carouselAction.label,
           type: 'postback',
           payload: 'TACOS'
@@ -161,7 +228,7 @@ function sendCarouseltoSmooch (appId, convId, messagePayload) {
       title: carouselItem.title,
       description: carouselItem.text,
       mediaUrl: carouselItem.thumbnailImageUrl,
-      actions: carouselActions
+      actions: newCarouselActions
     })
   });
   var carouselPayload = {
@@ -171,7 +238,7 @@ function sendCarouseltoSmooch (appId, convId, messagePayload) {
 
   messagePost.author = {
     type: 'business',
-    displayName: 'BOT'
+    displayName: BOT_ALIAS
   }
   messagePost.content = carouselPayload;
   
