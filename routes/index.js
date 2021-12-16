@@ -76,24 +76,29 @@ router.post('/hook-from-kata', function(req, res, next) {
   let appId = req.body.userId.split(':')[1];
   var convId = req.body.userId.split(':')[2];
   // var passToZd = false;
+
+  var response;
   req.body.messages.forEach(message => {
     if (message.type == 'text') {
-      sendToSmooch(appId, convId, message.content);
+      response = sendToSmooch(appId, convId, message.content);
     } else {
       if (message.payload.template_type == 'carousel') {
-        sendCarouseltoSmooch(appId, convId, message.payload);
+        response = sendCarouseltoSmooch(appId, convId, message.payload);
       } else if (message.payload.template_type == 'image') {
-        sendImagetoSmooch(appId, convId, message.payload);
+        response = sendImagetoSmooch(appId, convId, message.payload);
       } else if (message.payload.template_type == 'location') {
-        sendLocationtoSmooch(appId, convId, message.payload);
+        response = sendLocationtoSmooch(appId, convId, message.payload);
       } else if (message.payload.template_type == 'button') {
         console.log('not suppported on Smooch')
+        response = {
+          error: 'template_type: \'button\' not supported on Smooch'
+        }
       } else {
-        sendFiletoSmooch(appId, convId, message.payload);
+        response = sendFiletoSmooch(appId, convId, message.payload);
       }
     }
   });
-  res.status(200).send({});
+  res.status(200).send(response);
 });
 
 router.post('/handover', function(req, res, next) {
@@ -141,6 +146,7 @@ function sendToSmooch (appId, convId, messageContent) {
   //   console.error(error);
   // });
   finalSendtoSmooch(appId, convId, messagePost);
+  return messagePost;
 }
 
 function sendImagetoSmooch (appId, convId, messagePayload) {
@@ -161,6 +167,7 @@ function sendImagetoSmooch (appId, convId, messagePayload) {
   //   console.error(error);
   // });
   finalSendtoSmooch(appId, convId, messagePost);
+  return messagePost;
 }
 
 function sendLocationtoSmooch (appId, convId, messagePayload) {
@@ -188,6 +195,7 @@ function sendLocationtoSmooch (appId, convId, messagePayload) {
   //   console.error(error);
   // });
   finalSendtoSmooch(appId, convId, messagePost);
+  return messagePost;
 }
 
 
@@ -209,6 +217,7 @@ function sendFiletoSmooch (appId, convId, messagePayload) {
   //   console.error(error);
   // });
   finalSendtoSmooch(appId, convId, messagePost);
+  return messagePost;
 }
 
 function sendCarouseltoSmooch (appId, convId, messagePayload) {
@@ -256,6 +265,7 @@ function sendCarouseltoSmooch (appId, convId, messagePayload) {
   //   console.error(error);
   // });
   finalSendtoSmooch(appId, convId, messagePost);
+  return messagePost;
 }
 
 function finalSendtoSmooch (appId, convId, messagePost) {
