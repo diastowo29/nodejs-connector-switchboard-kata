@@ -18,6 +18,8 @@ basicAuth.password = SMOOCH_KEY_SECRET;
 var KATABOT_TOKEN = process.env.BOT_TOKEN;
 let KATABOT_URL = 'https://kanal.kata.ai/receive_message/' + KATABOT_TOKEN;
 
+var gotoSmooch = false;
+
 router.get('/webhook', function(req, res, next) {
   res.status(200).send({});
 })
@@ -84,6 +86,8 @@ router.post('/hook-from-kata', function(req, res, next) {
         sendImagetoSmooch(appId, convId, message.payload);
       } else if (message.payload.template_type == 'location') {
         sendLocationtoSmooch(appId, convId, message.payload);
+      } else if (message.payload.template_type == 'button') {
+        console.log('not suppported on Smooch')
       } else {
         sendFiletoSmooch(appId, convId, message.payload);
       }
@@ -120,7 +124,7 @@ function sendToBot (userId, chatContent) {
 }
 
 function sendToSmooch (appId, convId, messageContent) {
-  var apiInstance = new SunshineConversationsClient.MessagesApi();
+  // var apiInstance = new SunshineConversationsClient.MessagesApi();
   var messagePost = new SunshineConversationsClient.MessagePost();
   messagePost.author = {
     type: 'business',
@@ -131,15 +135,16 @@ function sendToSmooch (appId, convId, messageContent) {
     text: messageContent
   }
 
-  apiInstance.postMessage(appId, convId, messagePost).then(function(data) {
-    console.log('API POST Message called successfully. Returned data: ' + data);
-  }, function(error) {
-    console.error(error);
-  });
+  // apiInstance.postMessage(appId, convId, messagePost).then(function(data) {
+  //   console.log('API POST Message called successfully. Returned data: ' + data);
+  // }, function(error) {
+  //   console.error(error);
+  // });
+  finalSendtoSmooch(appId, convId, messagePost);
 }
 
 function sendImagetoSmooch (appId, convId, messagePayload) {
-  var apiInstance = new SunshineConversationsClient.MessagesApi();
+  // var apiInstance = new SunshineConversationsClient.MessagesApi();
   var messagePost = new SunshineConversationsClient.MessagePost();
   messagePost.author = {
     type: 'business',
@@ -150,15 +155,16 @@ function sendImagetoSmooch (appId, convId, messagePayload) {
     mediaUrl: messagePayload.items.originalContentUrl
   }
 
-  apiInstance.postMessage(appId, convId, messagePost).then(function(data) {
-    console.log('API POST Message called successfully. Returned data: ' + data);
-  }, function(error) {
-    console.error(error);
-  });
+  // apiInstance.postMessage(appId, convId, messagePost).then(function(data) {
+  //   console.log('API POST Message called successfully. Returned data: ' + data);
+  // }, function(error) {
+  //   console.error(error);
+  // });
+  finalSendtoSmooch(appId, convId, messagePost);
 }
 
 function sendLocationtoSmooch (appId, convId, messagePayload) {
-  var apiInstance = new SunshineConversationsClient.MessagesApi();
+  // var apiInstance = new SunshineConversationsClient.MessagesApi();
   var messagePost = new SunshineConversationsClient.MessagePost();
   messagePost.author = {
     type: 'business',
@@ -176,16 +182,17 @@ function sendLocationtoSmooch (appId, convId, messagePayload) {
     }
   }
 
-  apiInstance.postMessage(appId, convId, messagePost).then(function(data) {
-    console.log('API POST Message called successfully. Returned data: ' + data);
-  }, function(error) {
-    console.error(error);
-  });
+  // apiInstance.postMessage(appId, convId, messagePost).then(function(data) {
+  //   console.log('API POST Message called successfully. Returned data: ' + data);
+  // }, function(error) {
+  //   console.error(error);
+  // });
+  finalSendtoSmooch(appId, convId, messagePost);
 }
 
 
 function sendFiletoSmooch (appId, convId, messagePayload) {
-  var apiInstance = new SunshineConversationsClient.MessagesApi();
+  // var apiInstance = new SunshineConversationsClient.MessagesApi();
   var messagePost = new SunshineConversationsClient.MessagePost();
   messagePost.author = {
     type: 'business',
@@ -196,15 +203,16 @@ function sendFiletoSmooch (appId, convId, messagePayload) {
     mediaUrl: messagePayload.items.originalContentUrl
   }
 
-  apiInstance.postMessage(appId, convId, messagePost).then(function(data) {
-    console.log('API POST Message called successfully. Returned data: ' + data);
-  }, function(error) {
-    console.error(error);
-  });
+  // apiInstance.postMessage(appId, convId, messagePost).then(function(data) {
+  //   console.log('API POST Message called successfully. Returned data: ' + data);
+  // }, function(error) {
+  //   console.error(error);
+  // });
+  finalSendtoSmooch(appId, convId, messagePost);
 }
 
 function sendCarouseltoSmooch (appId, convId, messagePayload) {
-  var apiInstance = new SunshineConversationsClient.MessagesApi();
+  // var apiInstance = new SunshineConversationsClient.MessagesApi();
   var messagePost = new SunshineConversationsClient.MessagePost();
   var carouselItems = [];
   messagePayload.items.forEach(carouselItem => {
@@ -242,11 +250,26 @@ function sendCarouseltoSmooch (appId, convId, messagePayload) {
   }
   messagePost.content = carouselPayload;
   
-  apiInstance.postMessage(appId, convId, messagePost).then(function(data) {
-    console.log('API POST Message called successfully. Returned data: ' + data);
-  }, function(error) {
-    console.error(error);
-  });
+  // apiInstance.postMessage(appId, convId, messagePost).then(function(data) {
+  //   console.log('API POST Message called successfully. Returned data: ' + data);
+  // }, function(error) {
+  //   console.error(error);
+  // });
+  finalSendtoSmooch(appId, convId, messagePost);
+}
+
+function finalSendtoSmooch (appId, convId, messagePost) {
+  if (gotoSmooch) {
+    var apiInstance = new SunshineConversationsClient.MessagesApi();
+    
+    apiInstance.postMessage(appId, convId, messagePost).then(function(data) {
+      console.log('API POST Message called successfully. Returned data: ' + data);
+    }, function(error) {
+      console.error('error sending to smooch: ' + error);
+    });
+  } else {
+    console.log(JSON.stringify(messagePost))
+  }
 }
 
 function switchboardPassControl (appId, convId) {
