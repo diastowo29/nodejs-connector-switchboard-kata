@@ -20,7 +20,26 @@ let KATABOT_URL = 'https://kanal.kata.ai/receive_message/' + KATABOT_TOKEN;
 
 var gotoSmooch = false;
 
+
+var loggly = require('loggly');
+ 
+var client = loggly.createClient({
+  token: "4571598b-5fba-4bd3-bae1-858f645aa080",
+  subdomain: "diastowo",
+  auth: {
+    username: "diastowo",
+    password: "R@hasia123"
+  },
+  //
+  // Optional: Tag to send with EVERY log message
+  //
+  tags: ['global-tag']
+});
+
 router.get('/webhook', function(req, res, next) {
+  client.log('127.0.0.1 - Theres no place like home', function (err, result) {
+    // Do something once you've logged
+  });
   res.status(200).send({});
 })
 
