@@ -62,9 +62,9 @@ router.post('/webhook', function(req, res, next) {
                     var messagePayload = event.payload.message;
                     var userIdForBot = messagePayload.author.userId + ':' + appId + ':' + convId;
                     console.log('message to bot: ' + messagePayload.content.text);
-                    // if (messagePayload.content.type = 'text') {
-                    //   sendToBot(userIdForBot, messagePayload.content.text);
-                    // }
+                    if (messagePayload.content.type = 'text') {
+                      sendToBot(userIdForBot, messagePayload.content.text);
+                    }
                   }
               }
             }
@@ -249,7 +249,7 @@ function sendCarouseltoSmooch (appId, convId, messagePayload) {
         newCarouselActions.push({
           text: carouselAction.label,
           type: 'postback',
-          payload: carouselAction.payload[payloadKey[0]]
+          payload: carouselAction.payload[payloadKey[0]] //always get the first payload
         })
       }
     });
