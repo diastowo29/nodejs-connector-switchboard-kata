@@ -331,7 +331,9 @@ function sendCarouseltoSmooch (appId, convId, messagePayload) {
 }
 
 function finalSendtoSmooch (appId, convId, messagePost) {
+  
   if (gotoSmooch) {
+    winston.log('info', messagePost);
     var apiInstance = new SunshineConversationsClient.MessagesApi();
     
     apiInstance.postMessage(appId, convId, messagePost).then(function(data) {
