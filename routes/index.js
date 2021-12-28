@@ -18,7 +18,7 @@ basicAuth.password = SMOOCH_KEY_SECRET;
 var KATABOT_TOKEN = process.env.BOT_TOKEN;
 let KATABOT_URL = 'https://kanal.kata.ai/receive_message/' + KATABOT_TOKEN;
 
-var gotoSmooch = false;
+var gotoSmooch = true;
 
 var winston = require('winston');
 var {Loggly} = require('winston-loggly-bulk');
@@ -37,7 +37,7 @@ router.get('/webhook', function(req, res, next) {
 
 router.post('/webhook', function(req, res, next) {
   var appId = req.body.app.id;
-  // console.log(JSON.stringify(req.body))
+  console.log('BOT ALIAS: ' + BOT_ALIAS + ' | BYPASS ZD: ' + BYPASS_ZD)
   req.body.events.forEach(event => {
     if (event.type != 'conversation:read') {
       var convChannel = event.payload.message.source.type;
