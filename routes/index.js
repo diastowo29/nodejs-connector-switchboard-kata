@@ -68,6 +68,8 @@ router.post('/webhook', function(req, res, next) {
                       sendLocationToBot(userIdForBot, messagePayload.content)
                     } else if (messagePayload.content.type == 'file') {
                       sendFileToBot(userIdForBot, messagePayload.content);
+                    } else if (messagePayload.content.type == 'image') {
+                      sendImageToBot(userIdForBot, messagePayload.content)
                     }
                   }
               }
@@ -163,6 +165,26 @@ function sendFileToBot (userId, chatContent) {
               type: "data",
               payload : {
                 type: chatContent.mediaType,
+                url: chatContent.mediaUrl
+              }
+          }]
+      }
+  }).then(function (response) {
+      console.log('Sent to BOT: %s', response.status);
+  });
+}
+
+function sendImageToBot (userId, chatContent) {
+  console.log('-- send image to Bot --')
+  axios({
+      method: 'POST',
+      url: KATABOT_URL,
+      data: {
+          userId: userId,
+          messages: [{
+              type: "data",
+              payload : {
+                type: 'image',
                 url: chatContent.mediaUrl
               }
           }]
