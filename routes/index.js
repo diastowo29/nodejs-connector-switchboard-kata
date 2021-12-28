@@ -64,6 +64,10 @@ router.post('/webhook', function(req, res, next) {
                     console.log('=== Inbound Chat from:  ' + event.payload.message.author.displayName + ', Pass to Bot ===')
                     if (messagePayload.content.type = 'text') {
                       sendToBot(userIdForBot, messagePayload.content.text);
+                    } else if (messagePayload.content.type == 'location') {
+                      sendLocationToBot(userIdForBot, messagePayload.content)
+                    } else if (messagePayload.content.type == 'file') {
+                      sendFileToBot(userIdForBot, messagePayload.content);
                     }
                   }
               }
@@ -113,17 +117,63 @@ router.post('/hook-from-kata', function(req, res, next) {
 });
 
 router.post('/handover', function(req, res, next) {
-  let userId = req.body.userId.split(':')[0];
-  let appId = req.body.userId.split(':')[1];
-  var convId = req.body.userId.split(':')[2];
-  switchboardPassControl(appId, convId);
-  res.status(200).send({
-    status: 'ok'
-  })
+  if (req.body.userId.split(':').length < 3) {
+    res.status(400).send({
+      error: 'userId: not registered/wrong pattern'
+    })
+  } else {
+    let appId = req.body.userId.split(':')[1];
+    var convId = req.body.userId.split(':')[2];
+    switchboardPassControl(appId, convId);
+    res.status(200).send({
+      status: 'ok'
+    })
+  }
 })
 
+function sendLocationToBot (userId, chatContent) {
+  console.log('-- send location to Bot --')
+  axios({
+      method: 'POST',
+      url: KATABOT_URL,
+      data: {
+          userId: userId,
+          messages: [{
+              type: "data",
+              payload : {
+                type: 'location',
+                latitude: chatContent.coordinates.lat,
+                langitude: chatContent.coordinates.long
+              }
+          }]
+      }
+  }).then(function (response) {
+      console.log('Sent to BOT: %s', response.status);
+  });
+}
+
+function sendFileToBot (userId, chatContent) {
+  console.log('-- send file to Bot --')
+  axios({
+      method: 'POST',
+      url: KATABOT_URL,
+      data: {
+          userId: userId,
+          messages: [{
+              type: "data",
+              payload : {
+                type: chatContent.mediaType,
+                url: chatContent.mediaUrl
+              }
+          }]
+      }
+  }).then(function (response) {
+      console.log('Sent to BOT: %s', response.status);
+  });
+}
+
 function sendToBot (userId, chatContent) {
-  console.log('Chat form %s will be sent to BOT', userId);
+  console.log('-- send text to Bot --')
   axios({
       method: 'POST',
       url: KATABOT_URL,
