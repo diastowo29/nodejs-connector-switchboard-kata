@@ -37,7 +37,7 @@ router.get('/webhook', function(req, res, next) {
 
 router.post('/webhook', function(req, res, next) {
   var appId = req.body.app.id;
-  console.log('BOT ALIAS: ' + BOT_ALIAS + ' | BYPASS ZD: ' + BYPASS_ZD)
+  // console.log('BOT ALIAS: ' + BOT_ALIAS + ' | BYPASS ZD: ' + BYPASS_ZD)
   req.body.events.forEach(event => {
     if (event.type != 'conversation:read') {
       var convChannel = event.payload.message.source.type;
@@ -53,6 +53,7 @@ router.post('/webhook', function(req, res, next) {
             console.log('WEBHOOK from Smooch');
             console.log('User: ' + event.payload.message.author.displayName);
             console.log('Switchboard: ' + convSwitchboardName)
+            console.log('BYPASS: ' + BYPASS_ZD)
             if (convSwitchboardName == 'bot') {
               if (BYPASS_ZD) {
                 console.log('=== Inbound Chat from:  ' + event.payload.message.author.displayName + ', Pass Control to Zendesk ===')
