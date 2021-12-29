@@ -101,18 +101,18 @@ router.post('/hook-from-kata', function(req, res, next) {
       response = sendToSmooch(appId, convId, message.content);
     } else {
       if (message.payload.template_type == 'carousel') {
-        response = sendCarouseltoSmooch(appId, convId, message.payload);
+        response = sendCarouseltoSmooch(userId, appId, convId, message.payload);
       } else if (message.payload.template_type == 'image') {
-        response = sendImagetoSmooch(appId, convId, message.payload);
+        response = sendImagetoSmooch(userId, appId, convId, message.payload);
       } else if (message.payload.template_type == 'location') {
-        response = sendLocationtoSmooch(appId, convId, message.payload);
+        response = sendLocationtoSmooch(userId, appId, convId, message.payload);
       } else if (message.payload.template_type == 'button') {
         console.log('not suppported on Smooch')
         response = {
           error: 'template_type: \'button\' not supported on Smooch'
         }
       } else {
-        response = sendFiletoSmooch(appId, convId, message.payload);
+        response = sendFiletoSmooch(userId, appId, convId, message.payload);
       }
     }
   });
@@ -212,7 +212,7 @@ function sendToBot (userId, chatContent) {
   });
 }
 
-function sendToSmooch (appId, convId, messageContent) {
+function sendToSmooch (userId, appId, convId, messageContent) {
   // var apiInstance = new SunshineConversationsClient.MessagesApi();
   var messagePost = new SunshineConversationsClient.MessagePost();
   messagePost.author = {
@@ -229,11 +229,11 @@ function sendToSmooch (appId, convId, messageContent) {
   // }, function(error) {
   //   console.error(error);
   // });
-  finalSendtoSmooch(appId, convId, messagePost);
+  finalSendtoSmooch(userId, appId, convId, messagePost);
   return messagePost;
 }
 
-function sendImagetoSmooch (appId, convId, messagePayload) {
+function sendImagetoSmooch (userId, appId, convId, messagePayload) {
   // var apiInstance = new SunshineConversationsClient.MessagesApi();
   var messagePost = new SunshineConversationsClient.MessagePost();
   messagePost.author = {
@@ -250,11 +250,11 @@ function sendImagetoSmooch (appId, convId, messagePayload) {
   // }, function(error) {
   //   console.error(error);
   // });
-  finalSendtoSmooch(appId, convId, messagePost);
+  finalSendtoSmooch(userId, appId, convId, messagePost);
   return messagePost;
 }
 
-function sendLocationtoSmooch (appId, convId, messagePayload) {
+function sendLocationtoSmooch (userId, appId, convId, messagePayload) {
   // var apiInstance = new SunshineConversationsClient.MessagesApi();
   var messagePost = new SunshineConversationsClient.MessagePost();
   messagePost.author = {
@@ -278,12 +278,12 @@ function sendLocationtoSmooch (appId, convId, messagePayload) {
   // }, function(error) {
   //   console.error(error);
   // });
-  finalSendtoSmooch(appId, convId, messagePost);
+  finalSendtoSmooch(userId, appId, convId, messagePost);
   return messagePost;
 }
 
 
-function sendFiletoSmooch (appId, convId, messagePayload) {
+function sendFiletoSmooch (userId, appId, convId, messagePayload) {
   // var apiInstance = new SunshineConversationsClient.MessagesApi();
   var messagePost = new SunshineConversationsClient.MessagePost();
   messagePost.author = {
@@ -300,11 +300,11 @@ function sendFiletoSmooch (appId, convId, messagePayload) {
   // }, function(error) {
   //   console.error(error);
   // });
-  finalSendtoSmooch(appId, convId, messagePost);
+  finalSendtoSmooch(userId, appId, convId, messagePost);
   return messagePost;
 }
 
-function sendCarouseltoSmooch (appId, convId, messagePayload) {
+function sendCarouseltoSmooch (userId, appId, convId, messagePayload) {
   // var apiInstance = new SunshineConversationsClient.MessagesApi();
   var messagePost = new SunshineConversationsClient.MessagePost();
   var carouselItems = [];
@@ -349,20 +349,31 @@ function sendCarouseltoSmooch (appId, convId, messagePayload) {
   // }, function(error) {
   //   console.error(error);
   // });
-  finalSendtoSmooch(appId, convId, messagePost);
+  finalSendtoSmooch(userId, appId, convId, messagePost);
   return messagePost;
 }
 
-function finalSendtoSmooch (appId, convId, messagePost) {
+function finalSendtoSmooch (userId, appId, convId, messagePost) {
   
   if (gotoSmooch) {
-    winston.log('info', messagePost);
+    winston.log('info', {
+      process: 'sendToSmooch', 
+      status: 'info',
+      to: userId + ':' + appId + ':' + convId,
+      message: messagePost
+    });
+
     var apiInstance = new SunshineConversationsClient.MessagesApi();
     
     apiInstance.postMessage(appId, convId, messagePost).then(function(data) {
       console.log('API POST Message called successfully. Returned data: ' + data);
     }, function(error) {
       console.error('error sending to smooch: ' + error);
+      winston.log('error', {
+        process: 'sendToSmooch', 
+        status: 'error',
+        message: error
+      });
     });
   } else {
     winston.log('info', messagePost);
