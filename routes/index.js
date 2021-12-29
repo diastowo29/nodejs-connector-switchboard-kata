@@ -53,9 +53,9 @@ router.post('/webhook', function(req, res, next) {
             console.log('WEBHOOK from Smooch');
             console.log('User: ' + event.payload.message.author.displayName);
             console.log('Switchboard: ' + convSwitchboardName)
-            console.log('BYPASS: ' + BYPASS_ZD)
+            console.log('BYPASS: ' + (BYPASS_ZD == true))
             if (convSwitchboardName == 'bot') {
-              if (BYPASS_ZD) {
+              if (BYPASS_ZD == true) {
                 console.log('=== Inbound Chat from:  ' + event.payload.message.author.displayName + ', Pass Control to Zendesk ===')
                 switchboardPassControl(appId, convId);
               } else {
