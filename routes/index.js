@@ -372,7 +372,7 @@ function finalSendtoSmooch (userId, appId, convId, messagePost) {
       winston.log('error', {
         process: 'sendToSmooch', 
         status: 'error',
-        message: error
+        message: error.body
       });
     });
   } else {
