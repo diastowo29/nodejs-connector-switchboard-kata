@@ -98,7 +98,7 @@ router.post('/hook-from-kata', function(req, res, next) {
   var response;
   req.body.messages.forEach(message => {
     if (message.type == 'text') {
-      response = sendToSmooch(appId, convId, message.content);
+      response = sendToSmooch(userId, appId, convId, message.content);
     } else {
       if (message.payload.template_type == 'carousel') {
         response = sendCarouseltoSmooch(userId, appId, convId, message.payload);
