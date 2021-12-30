@@ -93,7 +93,7 @@ router.post('/webhook', function(req, res, next) {
 })
 
 router.post('/hook-from-kata', function(req, res, next) {
-  console.log('HOOK-FROM-KATA');
+  console.log('HOOK-FROM-KATA userId: ' + req.body.userId);
   let userId = req.body.userId.split(':')[0];
   let appId = req.body.userId.split(':')[1];
   var convId = req.body.userId.split(':')[2];
