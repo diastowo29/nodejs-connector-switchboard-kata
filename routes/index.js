@@ -52,22 +52,23 @@ router.post('/webhook', function(req, res, next) {
           var convId = event.payload.conversation.id;
           var convSwitchboardName = event.payload.conversation.activeSwitchboardIntegration.name;
           if (WA_ACTIVE_ACCOUNT.includes(convIntegrationId)) {
+            var displayName = event.payload.message.author.displayName;
             console.log(JSON.stringify(req.body))
             console.log('WEBHOOK from Smooch');
-            console.log('User: ' + event.payload.message.author.displayName);
+            console.log('User: ' + displayName);
             console.log('Switchboard: ' + convSwitchboardName)
             console.log('BYPASS: ' + (BYPASS_ZD == true))
             if (convSwitchboardName == 'bot') {
               if (BYPASS_ZD == true) {
-                console.log('=== Inbound Chat from:  ' + event.payload.message.author.displayName + ', Pass Control to Zendesk ===')
+                console.log('=== Inbound Chat from:  ' + displayName + ', Pass Control to Zendesk ===')
                 switchboardPassControl(appId, convId);
               } else {
                   if (event.payload.message.author.type == "user") {
                     var messagePayload = event.payload.message;
                     var userIdForBot = messagePayload.author.userId + ':' + appId + ':' + convId;
-                    console.log('=== Inbound Chat from:  ' + event.payload.message.author.displayName + ', Pass to Bot ===')
+                    console.log('=== Inbound Chat from:  ' + displayName + ', Pass to Bot ===')
                     if (messagePayload.content.type = 'text') {
-                      sendToBot(userIdForBot, messagePayload.content.text);
+                      sendToBot(displayName, userIdForBot, messagePayload.content.text);
                     } else if (messagePayload.content.type == 'location') {
                       sendLocationToBot(userIdForBot, messagePayload.content)
                     } else if (messagePayload.content.type == 'file') {
@@ -126,7 +127,7 @@ router.post('/handover', function(req, res, next) {
   if (req.body.userId.split(':').length < 3) {
     
     goLogging('error', P_HANDOVER, req.body.userId, req.body)
-    
+
     res.status(400).send({
       error: 'userId: not registered/wrong pattern'
     })
@@ -201,7 +202,7 @@ function sendImageToBot (userId, chatContent) {
   });
 }
 
-function sendToBot (userId, chatContent) {
+function sendToBot (displayName, userId, chatContent) {
   console.log('-- send text to Bot --')
   axios({
       method: 'POST',
@@ -210,7 +211,10 @@ function sendToBot (userId, chatContent) {
           userId: userId,
           messages: [{
               type: "text",
-              content: chatContent
+              content: chatContent,
+              payload: {
+                username: displayName
+              }
           }]
       }
   }).then(function (response) {
