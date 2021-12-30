@@ -121,6 +121,13 @@ router.post('/hook-from-kata', function(req, res, next) {
 
 router.post('/handover', function(req, res, next) {
   if (req.body.userId.split(':').length < 3) {
+    
+    winston.log('error', {
+      process: 'handover', 
+      status: 'error',
+      to: userId + ':' + appId + ':' + convId,
+      message: req.body
+    });
     res.status(400).send({
       error: 'userId: not registered/wrong pattern'
     })
