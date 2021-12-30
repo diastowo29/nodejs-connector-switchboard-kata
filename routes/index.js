@@ -125,7 +125,7 @@ router.post('/handover', function(req, res, next) {
     winston.log('error', {
       process: 'handover', 
       status: 'error',
-      to: userId,
+      to: req.body.userId,
       message: req.body
     });
     res.status(400).send({
