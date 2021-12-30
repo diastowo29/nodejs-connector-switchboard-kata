@@ -67,7 +67,7 @@ router.post('/webhook', function(req, res, next) {
                     var messagePayload = event.payload.message;
                     var userIdForBot = messagePayload.author.userId + ':' + appId + ':' + convId;
                     console.log('=== Inbound Chat from:  ' + displayName + ', Pass to Bot ===')
-                    if (messagePayload.content.type = 'text') {
+                    if (messagePayload.content.type == 'text') {
                       sendToBot(displayName, userIdForBot, messagePayload.content.text);
                     } else if (messagePayload.content.type == 'location') {
                       sendLocationToBot(userIdForBot, messagePayload.content)
