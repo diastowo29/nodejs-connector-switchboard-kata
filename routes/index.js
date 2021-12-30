@@ -15,6 +15,9 @@ var BOT_ALIAS = process.env.BOT_ALIAS;
 basicAuth.username = SMOOCH_KEY_ID;
 basicAuth.password = SMOOCH_KEY_SECRET;
 
+var P_SEND_TO_SMOOCH = 'sendToSmooch'
+var P_HANDOVER = 'handover'
+
 var KATABOT_TOKEN = process.env.BOT_TOKEN;
 let KATABOT_URL = 'https://kanal.kata.ai/receive_message/' + KATABOT_TOKEN;
 
@@ -122,12 +125,8 @@ router.post('/hook-from-kata', function(req, res, next) {
 router.post('/handover', function(req, res, next) {
   if (req.body.userId.split(':').length < 3) {
     
-    winston.log('error', {
-      process: 'handover', 
-      status: 'error',
-      to: req.body.userId,
-      message: req.body
-    });
+    goLogging('error', P_HANDOVER, req.body.userId, req.body)
+    
     res.status(400).send({
       error: 'userId: not registered/wrong pattern'
     })
@@ -363,27 +362,17 @@ function sendCarouseltoSmooch (userId, appId, convId, messagePayload) {
 function finalSendtoSmooch (userId, appId, convId, messagePost) {
   
   if (gotoSmooch) {
-    winston.log('info', {
-      process: 'sendToSmooch', 
-      status: 'info',
-      to: userId + ':' + appId + ':' + convId,
-      message: messagePost
-    });
-
+    goLogging('info', P_SEND_TO_SMOOCH, userId + ':' + appId + ':' + convId, messagePost)
     var apiInstance = new SunshineConversationsClient.MessagesApi();
     
     apiInstance.postMessage(appId, convId, messagePost).then(function(data) {
       console.log('API POST Message called successfully. Returned data: ' + data);
     }, function(error) {
       console.error('error sending to smooch: ' + error);
-      winston.log('error', {
-        process: 'sendToSmooch', 
-        status: 'error',
-        message: error.body
-      });
+      goLogging('error', P_SEND_TO_SMOOCH, userId + ':' + appId + ':' + convId, error.body)
     });
   } else {
-    winston.log('info', messagePost);
+    // winston.log('info', messagePost);
   }
 }
 
@@ -397,6 +386,15 @@ function switchboardPassControl (appId, convId) {
     console.log('API Pass Control called successfully. Returned data: ' + data);
   }, function(error) {
     console.log(error)
+  });
+}
+
+function goLogging (status, process, to, message) {
+  winston.log(status, {
+    process: process, 
+    status: status,
+    to: to,
+    message: message
   });
 }
 
