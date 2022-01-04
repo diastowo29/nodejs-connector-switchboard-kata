@@ -100,6 +100,7 @@ router.post('/hook-from-kata', function(req, res, next) {
   // var passToZd = false;
 
   var response;
+  console.log(req.body)
   req.body.messages.forEach(message => {
     if (message.type == 'text') {
       response = sendToSmooch(userId, appId, convId, message.content);
