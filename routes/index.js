@@ -6,11 +6,11 @@ const axios = require('axios');
 
 var basicAuth = defaultClient.authentications['basicAuth'];
 
-var SMOOCH_KEY_ID = process.env.SMOOCH_KEY_ID;
-var SMOOCH_KEY_SECRET = process.env.SMOOCH_KEY_SECRET;
-var BYPASS_ZD  = process.env.BYPASS_ZD;
-var WA_ACTIVE_ACCOUNT = process.env.WA_ACTIVE_ACCOUNT;
-var BOT_ALIAS = process.env.BOT_ALIAS;
+var SMOOCH_KEY_ID = process.env.SMOOCH_KEY_ID || "act_61b032912846ca00ebd2c038";
+var SMOOCH_KEY_SECRET = process.env.SMOOCH_KEY_SECRET || "L1pcvE5g7Wx8BwU5ZvXxpkvgBevtPzI8f-NdXsi9MtVip3H_8B79MYOCk6isG85WSUiuRYiw72HlMYAbKYxLTA";
+var BYPASS_ZD  = process.env.BYPASS_ZD || "false";
+var WA_ACTIVE_ACCOUNT = process.env.WA_ACTIVE_ACCOUNT || "61529a7c86e5ae00d9dc94b3";
+var BOT_ALIAS = process.env.BOT_ALIAS || "Bita";
 
 basicAuth.username = SMOOCH_KEY_ID;
 basicAuth.password = SMOOCH_KEY_SECRET;
@@ -18,7 +18,7 @@ basicAuth.password = SMOOCH_KEY_SECRET;
 var P_SEND_TO_SMOOCH = 'sendToSmooch'
 var P_HANDOVER = 'handover'
 
-var KATABOT_TOKEN = process.env.BOT_TOKEN;
+var KATABOT_TOKEN = process.env.BOT_TOKEN || "2b9b57fb-648d-4749-9804-f34524cc197b";
 let KATABOT_URL = 'https://kanal.kata.ai/receive_message/' + KATABOT_TOKEN;
 
 var gotoSmooch = true;
@@ -32,6 +32,12 @@ winston.add(new Loggly({
     tags: ["Winston-NodeJS"],
     json: true
 }));
+
+router.get('/testing', function(req, res, next) {
+  res.status(200).send({
+    smooch_id: SMOOCH_KEY_ID
+  })
+})
 
 
 router.get('/webhook', function(req, res, next) {
@@ -92,7 +98,7 @@ router.post('/webhook', function(req, res, next) {
   res.status(200).send({});
 })
 
-router.post('/hook-from-kata', function(req, res, next) {
+router.post('/hook-from-kata', async function(req, res, next) {
   console.log('HOOK-FROM-KATA userId: ' + req.body.userId);
   let userId = req.body.userId.split(':')[0];
   let appId = req.body.userId.split(':')[1];
@@ -101,27 +107,28 @@ router.post('/hook-from-kata', function(req, res, next) {
 
   var response;
   console.log(JSON.stringify(req.body))
-  req.body.messages.forEach(message => {
+  for(const message of req.body.messages) {
     if (message.type == 'text') {
-      response = sendToSmooch(userId, appId, convId, message.content);
+      console.log('sending id: ' + message.id)
+      await sendToSmooch(userId, appId, convId, message.content);
     } else {
       if (message.payload.template_type == 'carousel') {
-        response = sendCarouseltoSmooch(userId, appId, convId, message.payload);
+        await sendCarouseltoSmooch(userId, appId, convId, message.payload);
       } else if (message.payload.template_type == 'image') {
-        response = sendImagetoSmooch(userId, appId, convId, message.payload);
+        await sendImagetoSmooch(userId, appId, convId, message.payload);
       } else if (message.payload.template_type == 'location') {
-        response = sendLocationtoSmooch(userId, appId, convId, message.payload);
+        await sendLocationtoSmooch(userId, appId, convId, message.payload);
       } else if (message.payload.template_type == 'button') {
         console.log('not suppported on Smooch')
-        response = {
-          error: 'template_type: \'button\' not supported on Smooch'
-        }
+        // response =  {
+        //   error: 'template_type: \'button\' not supported on Smooch'
+        // }
       } else {
-        response = sendFiletoSmooch(userId, appId, convId, message.payload);
+        await sendFiletoSmooch(userId, appId, convId, message.payload);
       }
     }
-  });
-  res.status(200).send(response);
+  }
+  res.status(200).send({});
 });
 
 router.post('/handover', function(req, res, next) {
@@ -223,8 +230,8 @@ function sendToBot (displayName, userId, chatContent) {
   });
 }
 
-function sendToSmooch (userId, appId, convId, messageContent) {
-  // var apiInstance = new SunshineConversationsClient.MessagesApi();
+async function sendToSmooch (userId, appId, convId, messageContent) {
+  var apiInstance = new SunshineConversationsClient.MessagesApi();
   var messagePost = new SunshineConversationsClient.MessagePost();
   messagePost.author = {
     type: 'business',
@@ -235,13 +242,13 @@ function sendToSmooch (userId, appId, convId, messageContent) {
     text: messageContent
   }
 
-  // apiInstance.postMessage(appId, convId, messagePost).then(function(data) {
-  //   console.log('API POST Message called successfully. Returned data: ' + data);
-  // }, function(error) {
-  //   console.error(error);
-  // });
-  finalSendtoSmooch(userId, appId, convId, messagePost);
-  return messagePost;
+  await apiInstance.postMessage(appId, convId, messagePost).then(function(data) {
+    console.log('API POST Message called successfully. Returned data: ' + data);
+  }, function(error) {
+    console.error(error);
+  });
+  
+  // return finalSendtoSmooch(userId, appId, convId, messagePost);
 }
 
 function sendImagetoSmooch (userId, appId, convId, messagePayload) {
@@ -370,7 +377,7 @@ function finalSendtoSmooch (userId, appId, convId, messagePost) {
     goLogging('info', P_SEND_TO_SMOOCH, userId + ':' + appId + ':' + convId, messagePost)
     var apiInstance = new SunshineConversationsClient.MessagesApi();
     
-    apiInstance.postMessage(appId, convId, messagePost).then(function(data) {
+    return apiInstance.postMessage(appId, convId, messagePost).then(function(data) {
       console.log('API POST Message called successfully. Returned data: ' + data);
     }, function(error) {
       console.error('error sending to smooch: ' + error);
