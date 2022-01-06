@@ -71,7 +71,7 @@ router.post('/webhook', function(req, res, next) {
               } else {
                   if (event.payload.message.author.type == "user") {
                     var messagePayload = event.payload.message;
-                    var userIdForBot = messagePayload.author.userId + ':' + appId + ':' + convId;
+                    var userIdForBot = messagePayload.author.userId + '_' + appId + '_' + convId;
                     console.log('=== Inbound Chat from:  ' + displayName + ', Pass to Bot ===')
                     if (messagePayload.content.type == 'text') {
                       sendToBot(displayName, userIdForBot, messagePayload.content.text);
@@ -100,9 +100,9 @@ router.post('/webhook', function(req, res, next) {
 
 router.post('/hook-from-kata', async function(req, res, next) {
   console.log('HOOK-FROM-KATA userId: ' + req.body.userId);
-  let userId = req.body.userId.split(':')[0];
-  let appId = req.body.userId.split(':')[1];
-  var convId = req.body.userId.split(':')[2];
+  let userId = req.body.userId.split('_')[0];
+  let appId = req.body.userId.split('_')[1];
+  var convId = req.body.userId.split('_')[2];
   // var passToZd = false;
 
   var response;
@@ -231,7 +231,7 @@ function sendToBot (displayName, userId, chatContent) {
 }
 
 async function sendToSmooch (userId, appId, convId, messageContent) {
-  var apiInstance = new SunshineConversationsClient.MessagesApi();
+  // var apiInstance = new SunshineConversationsClient.MessagesApi();
   var messagePost = new SunshineConversationsClient.MessagePost();
   messagePost.author = {
     type: 'business',
@@ -242,13 +242,13 @@ async function sendToSmooch (userId, appId, convId, messageContent) {
     text: messageContent
   }
 
-  await apiInstance.postMessage(appId, convId, messagePost).then(function(data) {
-    console.log('API POST Message called successfully. Returned data: ' + data);
-  }, function(error) {
-    console.error(error);
-  });
+  // await apiInstance.postMessage(appId, convId, messagePost).then(function(data) {
+  //   console.log('API POST Message called successfully. Returned data: ' + data);
+  // }, function(error) {
+  //   console.error(error);
+  // });
   
-  // return finalSendtoSmooch(userId, appId, convId, messagePost);
+  return await finalSendtoSmooch(userId, appId, convId, messagePost);
 }
 
 function sendImagetoSmooch (userId, appId, convId, messagePayload) {
@@ -374,14 +374,14 @@ function sendCarouseltoSmooch (userId, appId, convId, messagePayload) {
 function finalSendtoSmooch (userId, appId, convId, messagePost) {
   
   if (gotoSmooch) {
-    goLogging('info', P_SEND_TO_SMOOCH, userId + ':' + appId + ':' + convId, messagePost)
+    goLogging('info', P_SEND_TO_SMOOCH, userId + '_' + appId + '_' + convId, messagePost)
     var apiInstance = new SunshineConversationsClient.MessagesApi();
     
     return apiInstance.postMessage(appId, convId, messagePost).then(function(data) {
       console.log('API POST Message called successfully. Returned data: ' + data);
     }, function(error) {
       console.error('error sending to smooch: ' + error);
-      goLogging('error', P_SEND_TO_SMOOCH, userId + ':' + appId + ':' + convId, error.body)
+      goLogging('error', P_SEND_TO_SMOOCH, userId + '_' + appId + '_' + convId, error.body)
     });
   } else {
     // winston.log('info', messagePost);
