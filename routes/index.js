@@ -132,7 +132,7 @@ router.post('/hook-from-kata', async function(req, res, next) {
 });
 
 router.post('/handover', function(req, res, next) {
-  if (req.body.userId.split(':').length < 3) {
+  if (req.body.userId.split('_').length < 3) {
     
     goLogging('error', P_HANDOVER, req.body.userId, req.body)
 
@@ -140,8 +140,8 @@ router.post('/handover', function(req, res, next) {
       error: 'userId: not registered/wrong pattern'
     })
   } else {
-    let appId = req.body.userId.split(':')[1];
-    var convId = req.body.userId.split(':')[2];
+    let appId = req.body.userId.split('_')[1];
+    var convId = req.body.userId.split('_')[2];
     switchboardPassControl(appId, convId);
     res.status(200).send({
       status: 'ok'
