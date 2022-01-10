@@ -140,6 +140,7 @@ router.post('/handover', function(req, res, next) {
       error: 'userId: not registered/wrong pattern'
     })
   } else {
+    goLogging('info', P_HANDOVER, req.body.userId, req.body)
     let appId = req.body.userId.split('_')[1];
     var convId = req.body.userId.split('_')[2];
     switchboardPassControl(appId, convId);
