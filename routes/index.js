@@ -92,6 +92,8 @@ router.post('/webhook', function(req, res, next) {
           }
         }
       }
+    } else {
+      console.log(event.type)
     }
   });
   res.status(200).send({});
