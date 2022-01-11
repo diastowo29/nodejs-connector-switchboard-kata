@@ -106,12 +106,12 @@ router.post('/hook-from-kata', async function(req, res, next) {
 
   var response;
   // console.log(JSON.stringify(req.body))
-  
+
   goLogging('info', P_SEND_TO_SMOOCH, req.body.userId, req.body)
   
   for(const message of req.body.messages) {
     if (message.type == 'text') {
-      console.log('sending id: ' + message.id)
+      console.log('sending id: ' + message.intent)
       await sendToSmooch(userId, appId, convId, message.content);
     } else {
       if (message.payload.template_type == 'carousel') {
