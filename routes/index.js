@@ -39,7 +39,6 @@ router.get('/testing', function(req, res, next) {
   })
 })
 
-
 router.get('/webhook', function(req, res, next) {
   res.status(200).send({});
 })
@@ -106,7 +105,10 @@ router.post('/hook-from-kata', async function(req, res, next) {
   // var passToZd = false;
 
   var response;
-  console.log(JSON.stringify(req.body))
+  // console.log(JSON.stringify(req.body))
+  
+  goLogging('info', P_SEND_TO_SMOOCH, req.body.userId, req.body)
+  
   for(const message of req.body.messages) {
     if (message.type == 'text') {
       console.log('sending id: ' + message.id)
@@ -375,7 +377,7 @@ function sendCarouseltoSmooch (userId, appId, convId, messagePayload) {
 function finalSendtoSmooch (userId, appId, convId, messagePost) {
   
   if (gotoSmooch) {
-    goLogging('info', P_SEND_TO_SMOOCH, userId + '_' + appId + '_' + convId, messagePost)
+    // goLogging('info', P_SEND_TO_SMOOCH, userId + '_' + appId + '_' + convId, messagePost)
     var apiInstance = new SunshineConversationsClient.MessagesApi();
     
     return apiInstance.postMessage(appId, convId, messagePost).then(function(data) {
