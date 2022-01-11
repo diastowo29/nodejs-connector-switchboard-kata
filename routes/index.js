@@ -48,6 +48,7 @@ router.post('/webhook', function(req, res, next) {
   // console.log('BOT ALIAS: ' + BOT_ALIAS + ' | BYPASS ZD: ' + BYPASS_ZD)
   req.body.events.forEach(event => {
     console.log(event.type)
+    console.log(JSON.stringify(event))
     if (event.type != 'conversation:read') {
       var convChannel = event.payload.message.source.type;
       var convIntegrationId = event.payload.message.source.integrationId;
