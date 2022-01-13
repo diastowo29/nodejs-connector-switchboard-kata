@@ -122,7 +122,7 @@ router.post('/hook-from-kata', async function(req, res, next) {
   for(const message of req.body.messages) {
     if (message.type == 'text') {
       console.log('sending id: ' + message.intent)
-      await sendToSmooch(userId, appId, convId, message.content);
+      await sendToSmooch(userId, appId, convId, message.content, message.id);
     } else {
       if (message.payload.template_type == 'carousel') {
         await sendCarouseltoSmooch(userId, appId, convId, message.payload);
@@ -243,7 +243,7 @@ function sendToBot (displayName, userId, chatContent) {
   });
 }
 
-async function sendToSmooch (userId, appId, convId, messageContent) {
+async function sendToSmooch (userId, appId, convId, messageContent, messageId) {
   // var apiInstance = new SunshineConversationsClient.MessagesApi();
   var messagePost = new SunshineConversationsClient.MessagePost();
   messagePost.author = {
@@ -253,6 +253,9 @@ async function sendToSmooch (userId, appId, convId, messageContent) {
   messagePost.content = {
     type: 'text',
     text: messageContent
+  }
+  messagePost.metadata = {
+    ext_id : 'testtt_' + messageId
   }
 
   // await apiInstance.postMessage(appId, convId, messagePost).then(function(data) {
