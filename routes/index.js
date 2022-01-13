@@ -39,6 +39,12 @@ router.get('/testing', function(req, res, next) {
   })
 })
 
+router.post('/delivery', function (req, res, next) {
+  console.log(JSON.stringify(req.body))
+  res.status(200).send({})
+})
+
+
 router.get('/webhook', function(req, res, next) {
   res.status(200).send({});
 })
