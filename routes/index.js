@@ -47,8 +47,8 @@ router.post('/webhook', function(req, res, next) {
   var appId = req.body.app.id;
   // console.log('BOT ALIAS: ' + BOT_ALIAS + ' | BYPASS ZD: ' + BYPASS_ZD)
   req.body.events.forEach(event => {
-    console.log(event.type)
-    console.log(JSON.stringify(event))
+    // console.log(event.type)
+    // console.log(JSON.stringify(event))
     if (event.type != 'conversation:read') {
       var convChannel = event.payload.message.source.type;
       var convIntegrationId = event.payload.message.source.integrationId;
@@ -70,20 +70,20 @@ router.post('/webhook', function(req, res, next) {
                 console.log('=== Inbound Chat from:  ' + displayName + ', Pass Control to Zendesk ===')
                 switchboardPassControl(appId, convId);
               } else {
-                  if (event.payload.message.author.type == "user") {
-                    var messagePayload = event.payload.message;
-                    var userIdForBot = messagePayload.author.userId + '_' + appId + '_' + convId;
-                    console.log('=== Inbound Chat from:  ' + displayName + ', Pass to Bot ===')
-                    if (messagePayload.content.type == 'text') {
-                      sendToBot(displayName, userIdForBot, messagePayload.content.text);
-                    } else if (messagePayload.content.type == 'location') {
-                      sendLocationToBot(userIdForBot, messagePayload.content)
-                    } else if (messagePayload.content.type == 'file') {
-                      sendFileToBot(userIdForBot, messagePayload.content);
-                    } else if (messagePayload.content.type == 'image') {
-                      sendImageToBot(userIdForBot, messagePayload.content)
-                    }
+                if (event.payload.message.author.type == "user") {
+                  var messagePayload = event.payload.message;
+                  var userIdForBot = messagePayload.author.userId + '_' + appId + '_' + convId;
+                  console.log('=== Inbound Chat from:  ' + displayName + ', Pass to Bot ===')
+                  if (messagePayload.content.type == 'text') {
+                    sendToBot(displayName, userIdForBot, messagePayload.content.text);
+                  } else if (messagePayload.content.type == 'location') {
+                    sendLocationToBot(userIdForBot, messagePayload.content)
+                  } else if (messagePayload.content.type == 'file') {
+                    sendFileToBot(userIdForBot, messagePayload.content);
+                  } else if (messagePayload.content.type == 'image') {
+                    sendImageToBot(userIdForBot, messagePayload.content)
                   }
+                }
               }
             }
           } else {
