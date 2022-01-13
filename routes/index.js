@@ -60,11 +60,11 @@ router.post('/webhook', function(req, res, next) {
           var convSwitchboardName = event.payload.conversation.activeSwitchboardIntegration.name;
           if (WA_ACTIVE_ACCOUNT.includes(convIntegrationId)) {
             var displayName = event.payload.message.author.displayName;
-            console.log(JSON.stringify(req.body))
-            console.log('WEBHOOK from Smooch');
-            console.log('User: ' + displayName);
-            console.log('Switchboard: ' + convSwitchboardName)
-            console.log('BYPASS: ' + (BYPASS_ZD == true))
+            // console.log(JSON.stringify(req.body))
+            // console.log('WEBHOOK from Smooch');
+            // console.log('User: ' + displayName);
+            // console.log('Switchboard: ' + convSwitchboardName)
+            // console.log('BYPASS: ' + (BYPASS_ZD == true))
             if (convSwitchboardName == 'bot') {
               if (BYPASS_ZD == true) {
                 console.log('=== Inbound Chat from:  ' + displayName + ', Pass Control to Zendesk ===')
