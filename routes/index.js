@@ -43,6 +43,14 @@ router.get('/webhook', function(req, res, next) {
   res.status(200).send({});
 })
 
+router.post('/deluvery', function (req, res, next) {
+  var appId = req.body.app.id;
+  req.body.events.forEach(event => {
+    var userId = event.payload.user.id;
+    var convId = event.payload.conversation.id;
+  });
+})
+
 router.post('/webhook', function(req, res, next) {
   var appId = req.body.app.id;
   // console.log('BOT ALIAS: ' + BOT_ALIAS + ' | BYPASS ZD: ' + BYPASS_ZD)
