@@ -50,6 +50,7 @@ router.post('/delivery', function (req, res, next) {
     var convId = event.payload.conversation.id;
     console.log('DELIVERED to: ' + userId + '_' + appId + '_' + convId)
   });
+  res.status(200).send({})
 })
 
 router.post('/webhook', function(req, res, next) {
