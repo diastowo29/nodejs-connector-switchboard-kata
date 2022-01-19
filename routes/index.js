@@ -72,7 +72,7 @@ router.post('/webhook', function(req, res, next) {
             // console.log('Switchboard: ' + convSwitchboardName)
             console.log('BYPASS: ' + BYPASS_ZD)
             if (convSwitchboardName == 'bot') {
-              if (BYPASS_ZD == true) {
+              if (BYPASS_ZD == 'true') {
                 console.log('=== Inbound Chat from:  ' + displayName + ', Pass Control to Zendesk ===')
                 switchboardPassControl(appId, convId);
               } else {
