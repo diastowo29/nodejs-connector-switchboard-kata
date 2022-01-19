@@ -33,7 +33,7 @@ router.post('/webhook', function(req, res, next) {
       console.log('Switchboard: ' + convSwitchboardName)
       var convChannel = event.payload.message.source.type;
       if (convSwitchboardName == 'bot') {
-        if (BYPASS_ZD) {
+        if (BYPASS_ZD == true) {
           console.log('=== PASS CONTROL TO ZENDESK ===')
           switchboardPassControl(appId, convId);
         } else {
