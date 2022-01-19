@@ -57,18 +57,6 @@ router.post('/webhook', function(req, res, next) {
     // console.log(JSON.stringify(event))
     if (event.type != 'conversation:read') {
       var convChannel = event.payload.message.source.type;
-<<<<<<< HEAD
-      if (convSwitchboardName == 'bot') {
-        if (BYPASS_ZD == true) {
-          console.log('=== PASS CONTROL TO ZENDESK ===')
-          switchboardPassControl(appId, convId);
-        } else {
-            if (event.payload.message.author.type == "user") {
-              var messagePayload = event.payload.message;
-              var userIdForBot = messagePayload.author.userId + ':' + appId + ':' + convId;
-              if (messagePayload.content.type = 'text') {
-                sendToBot(userIdForBot, messagePayload.content.text);
-=======
       var convIntegrationId = event.payload.message.source.integrationId;
       if (convChannel == 'whatsapp') {
         if ('activeSwitchboardIntegration' in event.payload.conversation) {
@@ -102,7 +90,6 @@ router.post('/webhook', function(req, res, next) {
                     sendImageToBot(userIdForBot, messagePayload.content)
                   }
                 }
->>>>>>> 63c3097d23e52ce31bf3f55f5f019a0b60481c36
               }
             }
           } else {
