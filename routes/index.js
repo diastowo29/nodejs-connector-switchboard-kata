@@ -7,8 +7,8 @@ const { chatlog_model } = require('../sequelize')
 
 var basicAuth = defaultClient.authentications['basicAuth'];
 
-var SMOOCH_KEY_ID = process.env.SMOOCH_KEY_ID || "act_61b032912846ca00ebd2c038";
-var SMOOCH_KEY_SECRET = process.env.SMOOCH_KEY_SECRET || "L1pcvE5g7Wx8BwU5ZvXxpkvgBevtPzI8f-NdXsi9MtVip3H_8B79MYOCk6isG85WSUiuRYiw72HlMYAbKYxLTA";
+var SMOOCH_KEY_ID = process.env.SMOOCH_KEY_ID || "xxx";
+var SMOOCH_KEY_SECRET = process.env.SMOOCH_KEY_SECRET || "xxx";
 var BYPASS_ZD  = process.env.BYPASS_ZD || "false";
 var WA_ACTIVE_ACCOUNT = process.env.WA_ACTIVE_ACCOUNT || "61529a7c86e5ae00d9dc94b3";
 var BOT_ALIAS = process.env.BOT_ALIAS || "Bita";
