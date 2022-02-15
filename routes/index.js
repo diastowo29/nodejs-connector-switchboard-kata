@@ -3,6 +3,7 @@ var router = express.Router();
 var SunshineConversationsClient = require('sunshine-conversations-client');
 var defaultClient = SunshineConversationsClient.ApiClient.instance;
 const axios = require('axios');
+const { chatlog_model } = require('../sequelize')
 
 var basicAuth = defaultClient.authentications['basicAuth'];
 
@@ -39,14 +40,54 @@ router.get('/testing', function(req, res, next) {
   })
 })
 
-router.post('/delivery', function (req, res, next) {
-  console.log(JSON.stringify(req.body))
-  res.status(200).send({})
-})
-
-
 router.get('/webhook', function(req, res, next) {
   res.status(200).send({});
+})
+
+router.post('/delivery', function (req, res, next) {
+  var appId = req.body.app.id;
+  req.body.events.forEach(event => {
+    var userId = event.payload.user.id;
+    var convId = event.payload.conversation.id;
+    var newUserId = userId + '_' + appId + '_' + convId;
+    chatlog_model.findAll({
+      where: {
+        user_id: newUserId
+      },
+      order: [
+        ['id', 'ASC']
+      ]
+    }).then(nextChat => {
+      if (nextChat.length > 0) {
+        chatlog_model.destroy({
+          where: {
+            id: nextChat[0].dataValues.id
+          }
+        })
+        if (nextChat.length > 1) {
+          var chatType = nextChat[1].dataValues.chat_type
+          let userId = nextChat[1].dataValues.user_id.split('_')[0];
+          let appId = nextChat[1].dataValues.user_id.split('_')[1];
+          var convId = nextChat[1].dataValues.user_id.split('_')[2];
+          
+          if (chatType == 'carousel') {
+            sendCarouseltoSmooch(userId, appId, convId, JSON.parse(nextChat[1].dataValues.chat_content));
+          } else if (chatType == 'image') {
+            sendImagetoSmooch(userId, appId, convId, JSON.parse(nextChat[1].dataValues.chat_content));
+          } else if (chatType == 'location') {
+            sendLocationtoSmooch(userId, appId, convId, JSON.parse(nextChat[1].dataValues.chat_content));
+          } else if (chatType == 'button') {
+            console.log('not suppported on Smooch')
+          } else if (chatType == 'text') {
+            sendToSmooch(userId, appId, convId, nextChat[1].dataValues.chat_content);
+          } else {
+            sendFiletoSmooch(userId, appId, convId, JSON.parse(nextChat[1].dataValues.chat_content));
+          }
+        }
+      }
+    })
+  });
+  res.status(200).send({})
 })
 
 router.post('/webhook', function(req, res, next) {
@@ -70,9 +111,9 @@ router.post('/webhook', function(req, res, next) {
             // console.log('WEBHOOK from Smooch');
             // console.log('User: ' + displayName);
             // console.log('Switchboard: ' + convSwitchboardName)
-            console.log('BYPASS: ' + BYPASS_ZD)
+            // console.log('BYPASS: ' + (BYPASS_ZD == true))
             if (convSwitchboardName == 'bot') {
-              if (BYPASS_ZD == 'true') {
+              if (BYPASS_ZD == true) {
                 console.log('=== Inbound Chat from:  ' + displayName + ', Pass Control to Zendesk ===')
                 switchboardPassControl(appId, convId);
               } else {
@@ -119,26 +160,38 @@ router.post('/hook-from-kata', async function(req, res, next) {
 
   goLogging('info', P_SEND_TO_SMOOCH, req.body.userId, req.body)
   
+  let i = 0;
   for(const message of req.body.messages) {
-    if (message.type == 'text') {
-      console.log('sending id: ' + message.intent)
-      await sendToSmooch(userId, appId, convId, message.content, message.id);
-    } else {
-      if (message.payload.template_type == 'carousel') {
-        await sendCarouseltoSmooch(userId, appId, convId, message.payload);
-      } else if (message.payload.template_type == 'image') {
-        await sendImagetoSmooch(userId, appId, convId, message.payload);
-      } else if (message.payload.template_type == 'location') {
-        await sendLocationtoSmooch(userId, appId, convId, message.payload);
-      } else if (message.payload.template_type == 'button') {
-        console.log('not suppported on Smooch')
-        // response =  {
-        //   error: 'template_type: \'button\' not supported on Smooch'
-        // }
+    if (i == 0) {
+      if (message.type == 'text') {
+        console.log('sending id: ' + message.id)
+        await sendToSmooch(userId, appId, convId, message.content);
+        dumpChat(req.body.userId, message.type, message.content)
       } else {
-        await sendFiletoSmooch(userId, appId, convId, message.payload);
+        if (message.payload.template_type == 'carousel') {
+          await sendCarouseltoSmooch(userId, appId, convId, message.payload);
+        } else if (message.payload.template_type == 'image') {
+          await sendImagetoSmooch(userId, appId, convId, message.payload);
+        } else if (message.payload.template_type == 'location') {
+          await sendLocationtoSmooch(userId, appId, convId, message.payload);
+        } else if (message.payload.template_type == 'button') {
+          console.log('not suppported on Smooch')
+          // response =  {
+          //   error: 'template_type: \'button\' not supported on Smooch'
+          // }
+        } else {
+          await sendFiletoSmooch(userId, appId, convId, message.payload);
+        }
+        dumpChat(req.body.userId, message.type, JSON.stringify(message.payload))
+      }
+    } else {
+      if (message.type == 'text') {
+        dumpChat(req.body.userId, message.type, message.content)
+      } else {
+        dumpChat(req.body.userId, message.type, JSON.stringify(message.payload))
       }
     }
+    i++;
   }
   res.status(200).send({});
 });
@@ -161,6 +214,19 @@ router.post('/handover', function(req, res, next) {
     })
   }
 })
+
+async function dumpChat (userId, type, chatContent) {
+  try {
+    const chatlog = await chatlog_model.create({
+      user_id: userId,
+      chat_type: type,
+      chat_content: chatContent
+    }); 
+    return chatlog;
+  } catch (err) {
+    console.log(err)
+  }
+}
 
 function sendLocationToBot (userId, chatContent) {
   console.log('-- send location to Bot --')
@@ -243,7 +309,7 @@ function sendToBot (displayName, userId, chatContent) {
   });
 }
 
-async function sendToSmooch (userId, appId, convId, messageContent, messageId) {
+async function sendToSmooch (userId, appId, convId, messageContent) {
   // var apiInstance = new SunshineConversationsClient.MessagesApi();
   var messagePost = new SunshineConversationsClient.MessagePost();
   messagePost.author = {
@@ -253,9 +319,6 @@ async function sendToSmooch (userId, appId, convId, messageContent, messageId) {
   messagePost.content = {
     type: 'text',
     text: messageContent
-  }
-  messagePost.metadata = {
-    ext_id : 'testtt_' + messageId
   }
 
   // await apiInstance.postMessage(appId, convId, messagePost).then(function(data) {
