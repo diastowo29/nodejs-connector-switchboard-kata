@@ -99,11 +99,11 @@ router.post('/webhook', function(req, res, next) {
     if (event.type != 'conversation:read') {
       var convChannel = event.payload.message.source.type;
       var convIntegrationId = event.payload.message.source.integrationId;
+      var convId = event.payload.conversation.id;
       if (convChannel == 'whatsapp') {
         if ('activeSwitchboardIntegration' in event.payload.conversation) {
           // console.log('== inbound message type: ' + convChannel + ' sw name: ' + event.payload.conversation.activeSwitchboardIntegration.name 
           //             + ' integrationId: ' + convIntegrationId + ' active wa account: ' + WA_ACTIVE_ACCOUNT.includes(convIntegrationId) + ' author: ' + event.payload.message.author.displayName)
-          var convId = event.payload.conversation.id;
           var convSwitchboardName = event.payload.conversation.activeSwitchboardIntegration.name;
           if (WA_ACTIVE_ACCOUNT.includes(convIntegrationId)) {
             var displayName = event.payload.message.author.displayName;
@@ -140,6 +140,9 @@ router.post('/webhook', function(req, res, next) {
             }
           }
         }
+      } else {
+        console.log('-- not from whatsapp, pass to zd imidiately -- ')
+        switchboardPassControl(appId, convId);
       }
     } else {
       console.log(event.type)
