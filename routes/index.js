@@ -46,47 +46,47 @@ router.get('/webhook', function(req, res, next) {
 
 router.post('/delivery', function (req, res, next) {
   var appId = req.body.app.id;
-  req.body.events.forEach(event => {
-    var userId = event.payload.user.id;
-    var convId = event.payload.conversation.id;
-    var newUserId = userId + '_' + appId + '_' + convId;
-    chatlog_model.findAll({
-      where: {
-        user_id: newUserId
-      },
-      order: [
-        ['id', 'ASC']
-      ]
-    }).then(nextChat => {
-      if (nextChat.length > 0) {
-        chatlog_model.destroy({
-          where: {
-            id: nextChat[0].dataValues.id
-          }
-        })
-        if (nextChat.length > 1) {
-          var chatType = nextChat[1].dataValues.chat_type
-          let userId = nextChat[1].dataValues.user_id.split('_')[0];
-          let appId = nextChat[1].dataValues.user_id.split('_')[1];
-          var convId = nextChat[1].dataValues.user_id.split('_')[2];
+  // req.body.events.forEach(event => {
+  //   var userId = event.payload.user.id;
+  //   var convId = event.payload.conversation.id;
+  //   var newUserId = userId + '_' + appId + '_' + convId;
+  //   chatlog_model.findAll({
+  //     where: {
+  //       user_id: newUserId
+  //     },
+  //     order: [
+  //       ['id', 'ASC']
+  //     ]
+  //   }).then(nextChat => {
+  //     if (nextChat.length > 0) {
+  //       chatlog_model.destroy({
+  //         where: {
+  //           id: nextChat[0].dataValues.id
+  //         }
+  //       })
+  //       if (nextChat.length > 1) {
+  //         var chatType = nextChat[1].dataValues.chat_type
+  //         let userId = nextChat[1].dataValues.user_id.split('_')[0];
+  //         let appId = nextChat[1].dataValues.user_id.split('_')[1];
+  //         var convId = nextChat[1].dataValues.user_id.split('_')[2];
           
-          if (chatType == 'carousel') {
-            sendCarouseltoSmooch(userId, appId, convId, JSON.parse(nextChat[1].dataValues.chat_content));
-          } else if (chatType == 'image') {
-            sendImagetoSmooch(userId, appId, convId, JSON.parse(nextChat[1].dataValues.chat_content));
-          } else if (chatType == 'location') {
-            sendLocationtoSmooch(userId, appId, convId, JSON.parse(nextChat[1].dataValues.chat_content));
-          } else if (chatType == 'button') {
-            console.log('not suppported on Smooch')
-          } else if (chatType == 'text') {
-            sendToSmooch(userId, appId, convId, nextChat[1].dataValues.chat_content);
-          } else {
-            sendFiletoSmooch(userId, appId, convId, JSON.parse(nextChat[1].dataValues.chat_content));
-          }
-        }
-      }
-    })
-  });
+  //         if (chatType == 'carousel') {
+  //           sendCarouseltoSmooch(userId, appId, convId, JSON.parse(nextChat[1].dataValues.chat_content));
+  //         } else if (chatType == 'image') {
+  //           sendImagetoSmooch(userId, appId, convId, JSON.parse(nextChat[1].dataValues.chat_content));
+  //         } else if (chatType == 'location') {
+  //           sendLocationtoSmooch(userId, appId, convId, JSON.parse(nextChat[1].dataValues.chat_content));
+  //         } else if (chatType == 'button') {
+  //           console.log('not suppported on Smooch')
+  //         } else if (chatType == 'text') {
+  //           sendToSmooch(userId, appId, convId, nextChat[1].dataValues.chat_content);
+  //         } else {
+  //           sendFiletoSmooch(userId, appId, convId, JSON.parse(nextChat[1].dataValues.chat_content));
+  //         }
+  //       }
+  //     }
+  //   })
+  // });
   res.status(200).send({})
 })
 
