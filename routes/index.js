@@ -3,7 +3,7 @@ var router = express.Router();
 var SunshineConversationsClient = require('sunshine-conversations-client');
 var defaultClient = SunshineConversationsClient.ApiClient.instance;
 const axios = require('axios');
-const { chatlog_model } = require('../sequelize')
+// const { chatlog_model } = require('../sequelize')
 
 var basicAuth = defaultClient.authentications['basicAuth'];
 
