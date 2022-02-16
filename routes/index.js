@@ -418,56 +418,20 @@ function hcSendCarouseltoSmooch(userId, appId, convId, messagePayload) {
     {
       title: "tacos",
       description: "Get your tacos today",
-      mediaUrl: "https://example.org/image.jpg",
+      mediaUrl: "https://www.eatingonadime.com/wp-content/uploads/2020/10/carne-asada-1-square.jpg",
       altText: "giant taco",
       size: "compact",
       actions: [{
         text: "Select",
         type: "postback",
         payload: "TACOS"
+      },{
+        text: "More info",
+        type: "link",
+        payload: "https://google.com"
       }]
     }
   ];
-  // var jsonItems = `"items": [
-  //   {
-  //     "title": "Tacos",
-  //     "description": "Get your tacos today!",
-  //     "mediaUrl": "https://example.org/image.jpg",
-  //     "altText": "A giant taco",
-  //     "size": "compact",
-  //     "actions": [
-  //       {
-  //         "text": "Select",
-  //         "type": "postback",
-  //         "payload": "TACOS"
-  //       },
-  //       {
-  //         "text": "More info",
-  //         "type": "link",
-  //         "uri": "https://example.org"
-  //       }
-  //     ]
-  //   },
-  //   {
-  //     "title": "Ramen",
-  //     "description": "Get your ramen today!",
-  //     "mediaUrl": "https://example.org/image.jpg",
-  //     "altText": "A chicken vegetable ramen bowl",
-  //     "size": "compact",
-  //     "actions": [
-  //       {
-  //         "text": "Select",
-  //         "type": "postback",
-  //         "payload": "RAMEN"
-  //       },
-  //       {
-  //         "text": "More info",
-  //         "type": "link",
-  //         "uri": "https://example.org"
-  //       }
-  //     ]
-  //   }
-  // ]`;
   
   var carouselPayload = {
     type: 'carousel',
