@@ -413,51 +413,64 @@ function sendFiletoSmooch(userId, appId, convId, messagePayload) {
 
 function hcSendCarouseltoSmooch(userId, appId, convId, messagePayload) {
   var messagePost = new SunshineConversationsClient.MessagePost();
-  var carouselItems = [];
-  var jsonItems = `"items": [
+  var carouselItems = [
     {
-      "title": "Tacos",
-      "description": "Get your tacos today!",
-      "mediaUrl": "https://example.org/image.jpg",
-      "altText": "A giant taco",
-      "size": "compact",
-      "actions": [
-        {
-          "text": "Select",
-          "type": "postback",
-          "payload": "TACOS"
-        },
-        {
-          "text": "More info",
-          "type": "link",
-          "uri": "https://example.org"
-        }
-      ]
-    },
-    {
-      "title": "Ramen",
-      "description": "Get your ramen today!",
-      "mediaUrl": "https://example.org/image.jpg",
-      "altText": "A chicken vegetable ramen bowl",
-      "size": "compact",
-      "actions": [
-        {
-          "text": "Select",
-          "type": "postback",
-          "payload": "RAMEN"
-        },
-        {
-          "text": "More info",
-          "type": "link",
-          "uri": "https://example.org"
-        }
-      ]
+      title: "tacos",
+      description: "Get your tacos today",
+      mediaUrl: "https://example.org/image.jpg",
+      altText: "giant taco",
+      size: "compact",
+      action: [{
+        text: "Select",
+        type: "postback",
+        payload: "TACOS"
+      }]
     }
-  ]`;
+  ];
+  // var jsonItems = `"items": [
+  //   {
+  //     "title": "Tacos",
+  //     "description": "Get your tacos today!",
+  //     "mediaUrl": "https://example.org/image.jpg",
+  //     "altText": "A giant taco",
+  //     "size": "compact",
+  //     "actions": [
+  //       {
+  //         "text": "Select",
+  //         "type": "postback",
+  //         "payload": "TACOS"
+  //       },
+  //       {
+  //         "text": "More info",
+  //         "type": "link",
+  //         "uri": "https://example.org"
+  //       }
+  //     ]
+  //   },
+  //   {
+  //     "title": "Ramen",
+  //     "description": "Get your ramen today!",
+  //     "mediaUrl": "https://example.org/image.jpg",
+  //     "altText": "A chicken vegetable ramen bowl",
+  //     "size": "compact",
+  //     "actions": [
+  //       {
+  //         "text": "Select",
+  //         "type": "postback",
+  //         "payload": "RAMEN"
+  //       },
+  //       {
+  //         "text": "More info",
+  //         "type": "link",
+  //         "uri": "https://example.org"
+  //       }
+  //     ]
+  //   }
+  // ]`;
   
   var carouselPayload = {
     type: 'carousel',
-    items: JSON.parse(jsonItems)
+    items: carouselItems
   };
 
   messagePost.author = {
@@ -471,7 +484,7 @@ function hcSendCarouseltoSmooch(userId, appId, convId, messagePayload) {
   // }, function(error) {
   //   console.error(error);
   // });
-  // finalSendtoSmooch(userId, appId, convId, messagePost);
+  finalSendtoSmooch(userId, appId, convId, messagePost);
   console.log(JSON.stringify(messagePost))
   return messagePost;
 }
