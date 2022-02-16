@@ -432,7 +432,7 @@ function hcSendCarouseltoSmooch(userId, appId, convId, messagePayload) {
       }]
     }
   ];
-  
+
   var carouselPayload = {
     type: 'carousel',
     items: carouselItems
@@ -449,7 +449,11 @@ function hcSendCarouseltoSmooch(userId, appId, convId, messagePayload) {
   // }, function(error) {
   //   console.error(error);
   // });
+
   finalSendtoSmooch(userId, appId, convId, messagePost);
+  console.log(userId)
+  console.log(appId)
+  console.log(convId)
   console.log(JSON.stringify(messagePost))
   return messagePost;
 }
