@@ -145,11 +145,12 @@ router.post('/webhook', function (req, res, next) {
         console.log(JSON.stringify(req.body))
         if (convChannel == 'android') {
           if (messagePayload.content.text.includes('car123')) {
+            console.log('send carousel')
             hcSendCarouseltoSmooch(messagePayload.author.userId, appId, convId, messagePayload)
           }
         }
-        console.log('-- not from whatsapp, pass to zd imidiately -- ')
-        switchboardPassControl(appId, convId);
+        // console.log('-- not from whatsapp, pass to zd imidiately -- ')
+        // switchboardPassControl(appId, convId);
       }
     } else {
       console.log(event.type)
