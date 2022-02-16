@@ -457,7 +457,7 @@ function hcSendCarouseltoSmooch(userId, appId, convId, messagePayload) {
   
   var carouselPayload = {
     type: 'carousel',
-    items: jsonItems
+    items: JSON.parse(jsonItems)
   };
 
   messagePost.author = {
@@ -472,7 +472,7 @@ function hcSendCarouseltoSmooch(userId, appId, convId, messagePayload) {
   //   console.error(error);
   // });
   // finalSendtoSmooch(userId, appId, convId, messagePost);
-  console.log(messagePost)
+  console.log(JSON.stringify(messagePost))
   return messagePost;
 }
 
