@@ -142,6 +142,7 @@ router.post('/webhook', function (req, res, next) {
         }
       } else {
         var messagePayload = event.payload.message;
+        console.log(JSON.stringify(req.body))
         if (convChannel == 'android') {
           if (messagePayload.content.text.includes('car123')) {
             hcSendCarouseltoSmooch(messagePayload.author.userId, appId, convId, messagePayload)
