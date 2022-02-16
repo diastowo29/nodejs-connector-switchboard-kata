@@ -421,7 +421,7 @@ function hcSendCarouseltoSmooch(userId, appId, convId, messagePayload) {
       mediaUrl: "https://example.org/image.jpg",
       altText: "giant taco",
       size: "compact",
-      action: [{
+      actions: [{
         text: "Select",
         type: "postback",
         payload: "TACOS"
