@@ -428,7 +428,7 @@ function hcSendCarouseltoSmooch(userId, appId, convId, messagePayload) {
       },{
         text: "More info",
         type: "link",
-        payload: "https://google.com"
+        uri: "https://google.com"
       }]
     }
   ];
