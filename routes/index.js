@@ -174,6 +174,9 @@ router.post('/webhook', function (req, res, next) {
               }
             }
           }
+        } else {
+          console.log('inbound from channel ' + convChannel)
+          switchboardPassControl(appId, convId);
         }
       }
     } else {
@@ -184,7 +187,7 @@ router.post('/webhook', function (req, res, next) {
 })
 
 router.post('/hook-from-kata', async function (req, res, next) {
-  console.log('HOOK-FROM-KATA userId: ' + req.body.userId);
+  // console.log('HOOK-FROM-KATA userId: ' + req.body.userId);
   let userId = req.body.userId.split('_')[0];
   let appId = req.body.userId.split('_')[1];
   var convId = req.body.userId.split('_')[2];
@@ -199,7 +202,7 @@ router.post('/hook-from-kata', async function (req, res, next) {
   for (const message of req.body.messages) {
     // if (i == 0) {
       if (message.type == 'text') {
-        console.log('sending id: ' + message.id)
+        // console.log('sending id: ' + message.id)
         await sendToSmooch(userId, appId, convId, message.content);
         // dumpChat(req.body.userId, message.type, message.content)
       } else {
@@ -475,10 +478,10 @@ function hcSendCarouseltoSmooch(userId, appId, convId, messagePayload) {
   // });
 
   finalSendtoSmooch(userId, appId, convId, messagePost);
-  console.log(userId)
-  console.log(appId)
-  console.log(convId)
-  console.log(JSON.stringify(messagePost))
+  // console.log(userId)
+  // console.log(appId)
+  // console.log(convId)
+  // console.log(JSON.stringify(messagePost))
   return messagePost;
 }
 
