@@ -160,7 +160,6 @@ router.post('/webhook', function (req, res, next) {
               switchboardPassControl(appId, convId);
             } else {
               if (event.payload.message.author.type == "user") {
-                var messagePayload = event.payload.message;
                 var userIdForBot = messagePayload.author.userId + '_' + appId + '_' + convId;
                 console.log('=== Inbound Chat from:  ' + displayName + ', Pass to Bot ===')
                 if (messagePayload.content.type == 'text') {
