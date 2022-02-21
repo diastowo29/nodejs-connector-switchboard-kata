@@ -197,11 +197,11 @@ router.post('/hook-from-kata', async function (req, res, next) {
 
   let i = 0;
   for (const message of req.body.messages) {
-    if (i == 0) {
+    // if (i == 0) {
       if (message.type == 'text') {
         console.log('sending id: ' + message.id)
         await sendToSmooch(userId, appId, convId, message.content);
-        dumpChat(req.body.userId, message.type, message.content)
+        // dumpChat(req.body.userId, message.type, message.content)
       } else {
         if (message.payload.template_type == 'carousel') {
           await sendCarouseltoSmooch(userId, appId, convId, message.payload);
@@ -217,15 +217,15 @@ router.post('/hook-from-kata', async function (req, res, next) {
         } else {
           await sendFiletoSmooch(userId, appId, convId, message.payload);
         }
-        dumpChat(req.body.userId, message.type, JSON.stringify(message.payload))
+        // dumpChat(req.body.userId, message.type, JSON.stringify(message.payload))
       }
-    } else {
-      if (message.type == 'text') {
-        dumpChat(req.body.userId, message.type, message.content)
-      } else {
-        dumpChat(req.body.userId, message.type, JSON.stringify(message.payload))
-      }
-    }
+    // } else {
+    //   if (message.type == 'text') {
+    //     // dumpChat(req.body.userId, message.type, message.content)
+    //   } else {
+    //     // dumpChat(req.body.userId, message.type, JSON.stringify(message.payload))
+    //   }
+    // }
     i++;
   }
   res.status(200).send({});
