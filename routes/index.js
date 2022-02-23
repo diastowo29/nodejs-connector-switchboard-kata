@@ -134,7 +134,7 @@ router.post('/webhook', function (req, res, next) {
                 }
               }
             }
-          } else {
+          } else if ((convChannel != 'api:conversations') || (convChannel != 'zd:agentWorkspace')) {
             if (convSwitchboardName == 'bot') {
               console.log('-- unregistered account, pass to zd imidiately -- ')
               switchboardPassControl(appId, convId);
