@@ -204,6 +204,11 @@ router.post('/hook-from-kata', async function (req, res, next) {
       if (message.type == 'text') {
         // console.log('sending id: ' + message.id)
         await sendToSmooch(userId, appId, convId, message.content);
+        if (appId == '5ea6f52b536ecb000f732a35') {
+          if (message.content.includes('Maaf yah belum bisa bantu lebih banyak') || message.content.includes('aku arahin langsung ke Real Agent yah')) {
+            switchboardPassControl(appId, convId);
+          }
+        }
         // dumpChat(req.body.userId, message.type, message.content)
       } else {
         if (message.payload.template_type == 'carousel') {
