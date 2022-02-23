@@ -101,6 +101,7 @@ router.post('/webhook', function (req, res, next) {
       var convIntegrationId = event.payload.message.source.integrationId;
       var convId = event.payload.conversation.id;
       var convSwitchboardName = event.payload.conversation.activeSwitchboardIntegration.name;
+      console.log('inbound: ' + event.payload.message.author.displayName + ' switchboard: ' + event.payload.conversation.activeSwitchboardIntegration.name)
       if (convChannel == 'whatsapp') {
         if ('activeSwitchboardIntegration' in event.payload.conversation) {
           // console.log('== inbound message type: ' + convChannel + ' sw name: ' + event.payload.conversation.activeSwitchboardIntegration.name 
