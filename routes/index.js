@@ -143,7 +143,7 @@ router.post('/webhook', function (req, res, next) {
         }
       } else {
         var messagePayload = event.payload.message;
-        console.log(JSON.stringify(req.body))
+        // console.log(JSON.stringify(req.body))
         if (convChannel == 'android' || convChannel == 'twitter') {
           console.log('from android')
           // if (messagePayload.content.text.includes('car123')) {
@@ -175,6 +175,8 @@ router.post('/webhook', function (req, res, next) {
               }
             }
           }
+        } else if (convChannel == 'api:conversations') {
+          
         } else {
           console.log('inbound from channel ' + convChannel)
           switchboardPassControl(appId, convId);
