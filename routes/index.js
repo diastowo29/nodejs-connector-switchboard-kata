@@ -94,98 +94,50 @@ router.post('/webhook', function (req, res, next) {
   var appId = req.body.app.id;
   // console.log('BOT ALIAS: ' + BOT_ALIAS + ' | BYPASS ZD: ' + BYPASS_ZD)
   req.body.events.forEach(event => {
-    // console.log(event.type)
-    // console.log(JSON.stringify(event))
     if (event.type != 'conversation:read') {
       var convChannel = event.payload.message.source.type;
       var convIntegrationId = event.payload.message.source.integrationId;
       var convId = event.payload.conversation.id;
       var convSwitchboardName = event.payload.conversation.activeSwitchboardIntegration.name;
       console.log('inbound: ' + event.payload.message.author.displayName + ' switchboard: ' + event.payload.conversation.activeSwitchboardIntegration.name)
-      // if (convChannel == 'whatsapp') {
-        if ('activeSwitchboardIntegration' in event.payload.conversation) {
-          // console.log('== inbound message type: ' + convChannel + ' sw name: ' + event.payload.conversation.activeSwitchboardIntegration.name 
-          //             + ' integrationId: ' + convIntegrationId + ' active wa account: ' + WA_ACTIVE_ACCOUNT.includes(convIntegrationId) + ' author: ' + event.payload.message.author.displayName)
-          if (WA_ACTIVE_ACCOUNT.includes(convIntegrationId)) {
-            var displayName = event.payload.message.author.displayName;
-            // console.log(JSON.stringify(req.body))
-            // console.log('WEBHOOK from Smooch');
-            // console.log('User: ' + displayName);
-            // console.log('Switchboard: ' + convSwitchboardName)
-            // console.log('BYPASS: ' + (BYPASS_ZD == true))
-            if (convSwitchboardName == 'bot') {
-              if (BYPASS_ZD == 'true') {
-                console.log('=== Inbound Chat from:  ' + displayName + ', Pass Control to Zendesk ===')
-                switchboardPassControl(appId, convId);
-              } else {
-                if (event.payload.message.author.type == "user") {
-                  var messagePayload = event.payload.message;
-                  var userIdForBot = messagePayload.author.userId + '_' + appId + '_' + convId;
-                  console.log('=== Inbound Chat from:  ' + displayName + ', Pass to Bot ===')
-                  if (messagePayload.content.type == 'text') {
-                    sendToBot(displayName, userIdForBot, messagePayload.content.text);
-                  } else if (messagePayload.content.type == 'location') {
-                    sendLocationToBot(userIdForBot, messagePayload.content)
-                  } else if (messagePayload.content.type == 'file') {
-                    sendFileToBot(userIdForBot, messagePayload.content);
-                  } else if (messagePayload.content.type == 'image') {
-                    sendImageToBot(userIdForBot, messagePayload.content)
-                  }
+      if ('activeSwitchboardIntegration' in event.payload.conversation) {
+        if (WA_ACTIVE_ACCOUNT.includes(convIntegrationId)) {
+          var displayName = event.payload.message.author.displayName;
+          if (convSwitchboardName == 'bot') {
+            if (BYPASS_ZD == 'true') {
+              console.log('=== Inbound Chat from:  ' + displayName + ', Pass Control to Zendesk ===')
+              switchboardPassControl(appId, convId);
+            } else {
+              if (event.payload.message.author.type == "user") {
+                var messagePayload = event.payload.message;
+                var userIdForBot = messagePayload.author.userId + '_' + appId + '_' + convId;
+                console.log('=== Inbound Chat from:  ' + displayName + ', Pass to Bot ===')
+                if (messagePayload.content.type == 'text') {
+                  sendToBot(displayName, userIdForBot, messagePayload.content.text);
+                } else if (messagePayload.content.type == 'location') {
+                  sendLocationToBot(userIdForBot, messagePayload.content)
+                } else if (messagePayload.content.type == 'file') {
+                  sendFileToBot(userIdForBot, messagePayload.content);
+                } else if (messagePayload.content.type == 'image') {
+                  sendImageToBot(userIdForBot, messagePayload.content)
                 }
               }
             }
-          } else if ((convChannel != 'api:conversations') && (convChannel != 'zd:agentWorkspace')) {
-            if (convSwitchboardName == 'bot') {
-              console.log('-- unregistered account, pass to zd imidiately -- ')
-              switchboardPassControl(appId, convId);
-            }
+          }
+        } else if ((convChannel != 'api:conversations') && (convChannel != 'zd:agentWorkspace')) {
+          if (convSwitchboardName == 'bot') {
+            console.log('-- unregistered account, pass to zd imidiately -- ')
+            switchboardPassControl(appId, convId);
           }
         }
-      // } else {
-      //   var messagePayload = event.payload.message;
-      //   // console.log(JSON.stringify(req.body))
-      //   if (convChannel == 'android' || convChannel == 'twitter') {
-      //     console.log('from android')
-      //     // if (messagePayload.content.text.includes('car123')) {
-      //     //   console.log('send carousel')
-      //     //   hcSendCarouseltoSmooch(messagePayload.author.userId, appId, convId, messagePayload)
-      //     // } else if (messagePayload.content.text.includes('switch')) {
-      //     //   switchboardPassControl(appId, convId);
-      //     // } else {
-      //     //   console.log('-- not from whatsapp, pass to zd imidiately -- ')
-      //     //   switchboardPassControl(appId, convId);
-      //     // }
-      //     if (convSwitchboardName == 'bot') {
-      //       if (BYPASS_ZD == 'true') {
-      //         console.log('=== Inbound Chat from:  ' + displayName + ', Pass Control to Zendesk ===')
-      //         switchboardPassControl(appId, convId);
-      //       } else {
-      //         if (event.payload.message.author.type == "user") {
-      //           var userIdForBot = messagePayload.author.userId + '_' + appId + '_' + convId;
-      //           console.log('=== Inbound Chat from:  ' + displayName + ', Pass to Bot ===')
-      //           if (messagePayload.content.type == 'text') {
-      //             sendToBot(displayName, userIdForBot, messagePayload.content.text);
-      //           } else if (messagePayload.content.type == 'location') {
-      //             sendLocationToBot(userIdForBot, messagePayload.content)
-      //           } else if (messagePayload.content.type == 'file') {
-      //             sendFileToBot(userIdForBot, messagePayload.content);
-      //           } else if (messagePayload.content.type == 'image') {
-      //             sendImageToBot(userIdForBot, messagePayload.content)
-      //           }
-      //         }
-      //       }
-      //     }
-      //   } else if (convChannel == 'api:conversations') {
-
-      //   } else {
-      //     console.log('inbound from channel ' + convChannel)
-      //     switchboardPassControl(appId, convId);
-      //   }
-      // }
-    } else {
-      console.log(event.type)
+      }
     }
   });
+  res.status(200).send({});
+})
+
+router.post('/conv-created', function(req, res, next) {
+  console.log(JSON.stringify(req.body))
   res.status(200).send({});
 })
 
@@ -486,10 +438,6 @@ function hcSendCarouseltoSmooch(userId, appId, convId, messagePayload) {
   // });
 
   finalSendtoSmooch(userId, appId, convId, messagePost);
-  // console.log(userId)
-  // console.log(appId)
-  // console.log(convId)
-  // console.log(JSON.stringify(messagePost))
   return messagePost;
 }
 
