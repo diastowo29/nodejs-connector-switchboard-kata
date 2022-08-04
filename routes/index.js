@@ -92,7 +92,7 @@ router.post('/delivery', function (req, res, next) {
 
 router.post('/webhook', function (req, res, next) {
   var appId = req.body.app.id;
-  console.log(JSON.stringify(req.body))
+  console.log(JSON.stringify(req.header))
   // console.log('BOT ALIAS: ' + BOT_ALIAS + ' | BYPASS ZD: ' + BYPASS_ZD)
   req.body.events.forEach(event => {
     if (event.type != 'conversation:read') {
@@ -127,8 +127,10 @@ router.post('/webhook', function (req, res, next) {
           }
         } else if ((convChannel != 'api:conversations') && (convChannel != 'zd:agentWorkspace')) {
           if (convSwitchboardName == 'bot') {
-            console.log('-- unregistered account, pass to zd imidiately -- ')
-            switchboardPassControl(appId, convId);
+            if (convChannel != 'officehours') { // 'officehours' means automated messages
+              console.log('-- unregistered account, pass to zd imidiately -- ')
+              switchboardPassControl(appId, convId);
+            }
           }
         }
       }
