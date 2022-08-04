@@ -92,7 +92,6 @@ router.post('/delivery', function (req, res, next) {
 
 router.post('/webhook', function (req, res, next) {
   var appId = req.body.app.id;
-  console.log(JSON.stringify(req.header))
   // console.log('BOT ALIAS: ' + BOT_ALIAS + ' | BYPASS ZD: ' + BYPASS_ZD)
   req.body.events.forEach(event => {
     if (event.type != 'conversation:read') {
@@ -112,6 +111,7 @@ router.post('/webhook', function (req, res, next) {
               if (event.payload.message.author.type == "user") {
                 var messagePayload = event.payload.message;
                 var userIdForBot = messagePayload.author.userId + '_' + appId + '_' + convId;
+                console.log((req.header))
                 console.log('=== Inbound Chat from:  ' + displayName + ', Pass to Bot ===')
                 if (messagePayload.content.type == 'text') {
                   sendToBot(displayName, userIdForBot, messagePayload.content.text);
