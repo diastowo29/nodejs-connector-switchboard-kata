@@ -92,6 +92,7 @@ router.post('/delivery', function (req, res, next) {
 
 router.post('/webhook', function (req, res, next) {
   var appId = req.body.app.id;
+  console.log(JSON.stringify(req.body))
   // console.log('BOT ALIAS: ' + BOT_ALIAS + ' | BYPASS ZD: ' + BYPASS_ZD)
   req.body.events.forEach(event => {
     if (event.type != 'conversation:read') {
