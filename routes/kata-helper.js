@@ -18,4 +18,33 @@ router.post('/register-employee', function(req, res, next) {
     })
 });
 
+router.get('/checkin', function(req, res, next) {
+    var date = new Date(); 
+    var now_utc =  Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(),
+    date.getUTCHours()+7, date.getUTCMinutes(), date.getUTCSeconds());
+
+    var dt = new Date(now_utc);
+    res.status(200).send({
+        time: dt
+    })
+});
+
+router.get('/checkout', function(req, res, next) {
+    var date = new Date(); 
+    var now_utc =  Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(),
+    date.getUTCHours()+7, date.getUTCMinutes(), date.getUTCSeconds());
+
+    var dt = new Date(now_utc);
+    var durationDummy = generateRandomInteger(3, 10);
+    res.status(200).send({
+        time: dt,
+        duration: durationDummy
+    })
+});
+
+function generateRandomInteger(min, max) {
+    return Math.floor(min + Math.random()*(max - min + 1))
+  }
+  
+
 module.exports = router;
