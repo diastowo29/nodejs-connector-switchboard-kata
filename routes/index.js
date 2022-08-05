@@ -152,7 +152,7 @@ router.post('/hook-from-kata', async function (req, res, next) {
   // var passToZd = false;
 
   var response;
-  // console.log(JSON.stringify(req.body))
+  console.log(JSON.stringify(req.body))
 
   goLogging('info', P_SEND_TO_SMOOCH, req.body.userId, req.body)
 
@@ -180,6 +180,10 @@ router.post('/hook-from-kata', async function (req, res, next) {
           // response =  {
           //   error: 'template_type: \'button\' not supported on Smooch'
           // }
+        } else if (message.payload.template_type == 'text') {
+          await sendQuickReplySmooch(userId, appId, convId, message.payload);
+        } else if (message.payload.template_type == 'list_reply') {
+          await sendQuickReplySmooch(userId, appId, convId, message.payload);
         } else {
           await sendFiletoSmooch(userId, appId, convId, message.payload);
         }
@@ -328,6 +332,85 @@ async function sendToSmooch(userId, appId, convId, messageContent) {
   //   console.error(error);
   // });
 
+  return await finalSendtoSmooch(userId, appId, convId, messagePost);
+}
+
+async function sendQuickReplySmooch (userId, appId, convId, messagePayload) {
+  // console.log('sendquick to smooch')
+  var messagePost = new SunshineConversationsClient.MessagePost();
+  messagePost.author = {
+    type: 'business',
+    displayName: BOT_ALIAS
+  }
+  messagePost.content = {
+    type: 'text',
+    text: 'quickreply'
+  }
+
+  var actionObject = {};
+  var interactiveType = '';
+  var bodyText = '';
+  if (messagePayload.template_type == 'text') {
+    var listofButtons = []
+    interactiveType = 'button';
+    messagePayload.items.quickreply.forEach(quickreply => {
+      listofButtons.push({
+        type: 'reply',
+        reply : {
+          id: quickreply.label,
+          title: quickreply.text
+        }
+      })
+    });
+    
+    bodyText = messagePayload.items.text
+    actionObject = {
+      buttons: listofButtons
+    }
+
+  } else if (messagePayload.template_type == 'list_reply') {
+    var listofSections = [];
+    var sectionRows = [];
+    messagePayload.items.action.sections.forEach(section => {
+      section.rows.forEach(row => {
+        sectionRows.push({
+          id: row.id,
+          title: row.title,
+          description: row.description
+        })
+      });
+      listofSections.push({
+        title: section.title,
+        rows: sectionRows
+      })
+    });
+    bodyText = messagePayload.items.body.text
+
+    interactiveType = 'list';
+    actionObject = {
+      button: messagePayload.items.action.button,
+      sections: listofSections 
+    }
+  }
+
+  var interactiveObject = {
+    type: interactiveType,
+    body: {
+        text: bodyText
+    },
+    action: actionObject
+  }
+
+  messagePost.override = {
+    whatsapp: {
+      payload: {
+        type: "interactive",
+        interactive: interactiveObject
+      }
+    }
+  }
+
+  console.log(JSON.stringify(messagePost))
   return await finalSendtoSmooch(userId, appId, convId, messagePost);
 }
 
