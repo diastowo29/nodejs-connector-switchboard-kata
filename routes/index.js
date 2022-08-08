@@ -152,7 +152,7 @@ router.post('/hook-from-kata', async function (req, res, next) {
   // var passToZd = false;
 
   var response;
-  console.log(JSON.stringify(req.body))
+  // console.log(JSON.stringify(req.body))
 
   goLogging('info', P_SEND_TO_SMOOCH, req.body.userId, req.body)
 
