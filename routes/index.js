@@ -101,9 +101,9 @@ router.post('/webhook', function (req, res, next) {
       var convChannel = event.payload.message.source.type;
       var convIntegrationId = event.payload.message.source.integrationId;
       var convId = event.payload.conversation.id;
-      var convSwitchboardName = event.payload.conversation.activeSwitchboardIntegration.name;
-      console.log('inbound: ' + event.payload.message.author.displayName + ' switchboard: ' + event.payload.conversation.activeSwitchboardIntegration.name)
       if ('activeSwitchboardIntegration' in event.payload.conversation) {
+        var convSwitchboardName = event.payload.conversation.activeSwitchboardIntegration.name;
+        console.log('inbound: ' + event.payload.message.author.displayName + ' switchboard: ' + event.payload.conversation.activeSwitchboardIntegration.name)
         if (WA_ACTIVE_ACCOUNT.includes(convIntegrationId)) {
           var displayName = event.payload.message.author.displayName;
           if (convSwitchboardName == 'bot') {
