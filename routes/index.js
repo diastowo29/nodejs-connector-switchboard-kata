@@ -14,14 +14,16 @@ var WA_ACTIVE_ACCOUNT = process.env.WA_ACTIVE_ACCOUNT || "61529a7c86e5ae00d9dc94
 var BOT_ALIAS = process.env.BOT_ALIAS || "Bita";
 var LOG_TOKEN = '';
 
+var LOG_TOKEN = '';
+
 basicAuth.username = SMOOCH_KEY_ID;
 basicAuth.password = SMOOCH_KEY_SECRET;
 
 var P_SEND_TO_SMOOCH = 'sendToSmooch'
 var P_HANDOVER = 'handover'
 
-var KATABOT_TOKEN = process.env.BOT_TOKEN || "xxx";
-let KATABOT_URL = 'https://kanal.kata.ai/receive_message/' + KATABOT_TOKEN;
+var BOT_TOKEN = process.env.BOT_TOKEN || "xxx";
+let BOT_URL = 'https://kanal.kata.ai/receive_message/' + BOT_TOKEN;
 
 var gotoSmooch = true;
 
@@ -93,6 +95,7 @@ router.post('/delivery', function (req, res, next) {
 
 router.post('/webhook', function (req, res, next) {
   var appId = req.body.app.id;
+  console.log(JSON.stringify(req.body))
   // console.log('BOT ALIAS: ' + BOT_ALIAS + ' | BYPASS ZD: ' + BYPASS_ZD)
   req.body.events.forEach(event => {
     if (event.type != 'conversation:read') {
@@ -238,7 +241,7 @@ function sendLocationToBot(userId, chatContent) {
   console.log('-- send location to Bot --')
   axios({
     method: 'POST',
-    url: KATABOT_URL,
+    url: BOT_URL,
     data: {
       userId: userId,
       messages: [{
@@ -259,7 +262,7 @@ function sendFileToBot(userId, chatContent) {
   console.log('-- send file to Bot --')
   axios({
     method: 'POST',
-    url: KATABOT_URL,
+    url: BOT_URL,
     data: {
       userId: userId,
       messages: [{
@@ -279,7 +282,7 @@ function sendImageToBot(userId, chatContent) {
   console.log('-- send image to Bot --')
   axios({
     method: 'POST',
-    url: KATABOT_URL,
+    url: BOT_URL,
     data: {
       userId: userId,
       messages: [{
@@ -299,7 +302,7 @@ function sendToBot(displayName, userId, chatContent) {
   console.log('-- send text to Bot --')
   axios({
     method: 'POST',
-    url: KATABOT_URL,
+    url: BOT_URL,
     data: {
       userId: userId,
       messages: [{
