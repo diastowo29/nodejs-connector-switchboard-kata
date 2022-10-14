@@ -12,6 +12,7 @@ var SMOOCH_KEY_SECRET = process.env.SMOOCH_KEY_SECRET || "xxx";
 var BYPASS_ZD = process.env.BYPASS_ZD || "false";
 var WA_ACTIVE_ACCOUNT = process.env.WA_ACTIVE_ACCOUNT || "61529a7c86e5ae00d9dc94b3";
 var BOT_ALIAS = process.env.BOT_ALIAS || "Bita";
+var LOG_TOKEN = '';
 
 basicAuth.username = SMOOCH_KEY_ID;
 basicAuth.password = SMOOCH_KEY_SECRET;
@@ -98,9 +99,9 @@ router.post('/webhook', function (req, res, next) {
       var convChannel = event.payload.message.source.type;
       var convIntegrationId = event.payload.message.source.integrationId;
       var convId = event.payload.conversation.id;
-      var convSwitchboardName = event.payload.conversation.activeSwitchboardIntegration.name;
       console.log('inbound: ' + event.payload.message.author.displayName + ' switchboard: ' + event.payload.conversation.activeSwitchboardIntegration.name)
       if ('activeSwitchboardIntegration' in event.payload.conversation) {
+        var convSwitchboardName = event.payload.conversation.activeSwitchboardIntegration.name;
         if (WA_ACTIVE_ACCOUNT.includes(convIntegrationId)) {
           var displayName = event.payload.message.author.displayName;
           if (convSwitchboardName == 'zd-answerBot') {
@@ -144,7 +145,7 @@ router.post('/conv-created', function(req, res, next) {
   res.status(200).send({});
 })
 
-router.post('/hook-from-kata', async function (req, res, next) {
+router.post('/conversation/reply', async function (req, res, next) {
   // console.log('HOOK-FROM-KATA userId: ' + req.body.userId);
   let userId = req.body.userId.split('_')[0];
   let appId = req.body.userId.split('_')[1];
@@ -201,7 +202,7 @@ router.post('/hook-from-kata', async function (req, res, next) {
   res.status(200).send({});
 });
 
-router.post('/handover', function (req, res, next) {
+router.post('/conversation/handover', function (req, res, next) {
   if (req.body.userId.split('_').length < 3) {
 
     goLogging('error', P_HANDOVER, req.body.userId, req.body)
