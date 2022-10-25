@@ -10,7 +10,7 @@ var basicAuth = defaultClient.authentications['basicAuth'];
 var SMOOCH_KEY_ID = process.env.SMOOCH_KEY_ID || "xxx";
 var SMOOCH_KEY_SECRET = process.env.SMOOCH_KEY_SECRET || "xxx";
 var BYPASS_ZD = process.env.BYPASS_ZD || "false";
-var WA_ACTIVE_ACCOUNT = process.env.WA_ACTIVE_ACCOUNT || "61529a7c86e5ae00d9dc94b3";
+var WA_ACTIVE_ACCOUNT = process.env.WA_ACTIVE_ACCOUNT || "62d7a492294f2700f0e3b08c";
 var BOT_ALIAS = process.env.BOT_ALIAS || "Bita";
 var LOG_TOKEN = '';
 
@@ -21,9 +21,9 @@ var P_SEND_TO_SMOOCH = 'sendToSmooch'
 var P_HANDOVER = 'handover'
 
 var BOT_TOKEN = process.env.BOT_TOKEN || "xxx";
-let BOT_URL = 'https://kanal.kata.ai/receive_message/' + BOT_TOKEN;
+let BOT_URL = 'https://r2.app.yellow.ai/integrations/sendMessage/' + BOT_TOKEN;
 
-var gotoSmooch = true;
+var gotoSmooch = false;
 
 var winston = require('winston');
 var { Loggly } = require('winston-loggly-bulk');
@@ -36,17 +36,15 @@ winston.add(new Loggly({
 }));
 
 router.get('/testing', function (req, res, next) {
-  res.status(200).send({
-    smooch_id: SMOOCH_KEY_ID
-  })
+  res.status(200).send(generateBotPayload('userid123', {content: {text: 'halo123'}}, 'image'))
 })
 
 router.get('/webhook', function (req, res, next) {
   res.status(200).send({});
 })
 
-router.post('/delivery', function (req, res, next) {
-  var appId = req.body.app.id;
+// router.post('/delivery', function (req, res, next) {
+//   var appId = req.body.app.id;
   // req.body.events.forEach(event => {
   //   var userId = event.payload.user.id;
   //   var convId = event.payload.conversation.id;
@@ -88,8 +86,8 @@ router.post('/delivery', function (req, res, next) {
   //     }
   //   })
   // });
-  res.status(200).send({})
-})
+//   res.status(200).send({})
+// })
 
 router.post('/webhook', function (req, res, next) {
   var appId = req.body.app.id;
@@ -100,6 +98,7 @@ router.post('/webhook', function (req, res, next) {
       var convChannel = event.payload.message.source.type;
       var convIntegrationId = event.payload.message.source.integrationId;
       var convId = event.payload.conversation.id;
+      console.log(generateBotPayload('useridtesting', event.payload.message))
       if ('activeSwitchboardIntegration' in event.payload.conversation) {
         var convSwitchboardName = event.payload.conversation.activeSwitchboardIntegration.name;
         console.log('inbound: ' + event.payload.message.author.displayName + ' switchboard: ' + event.payload.conversation.activeSwitchboardIntegration.name)
@@ -115,15 +114,16 @@ router.post('/webhook', function (req, res, next) {
                 var userIdForBot = messagePayload.author.userId + '_' + appId + '_' + convId;
                 // console.log((req.headers))
                 console.log('=== Inbound Chat from:  ' + displayName + ', Pass to Bot ===')
-                if (messagePayload.content.type == 'text') {
-                  sendToBot(displayName, userIdForBot, messagePayload.content.text);
-                } else if (messagePayload.content.type == 'location') {
-                  sendLocationToBot(userIdForBot, messagePayload.content)
-                } else if (messagePayload.content.type == 'file') {
-                  sendFileToBot(userIdForBot, messagePayload.content);
-                } else if (messagePayload.content.type == 'image') {
-                  sendImageToBot(userIdForBot, messagePayload.content)
-                }
+                sendToBot(generateBotPayload(userIdForBot, messagePayload))
+                // if (messagePayload.content.type == 'text') {
+                //   sendToBot(displayName, userIdForBot, messagePayload.content.text);
+                // } else if (messagePayload.content.type == 'location') {
+                //   sendLocationToBot(userIdForBot, messagePayload.content)
+                // } else if (messagePayload.content.type == 'file') {
+                //   sendFileToBot(userIdForBot, messagePayload.content);
+                // } else if (messagePayload.content.type == 'image') {
+                //   sendImageToBot(userIdForBot, messagePayload.content)
+                // }
               }
             }
           }
@@ -164,11 +164,11 @@ router.post('/conversation/reply', async function (req, res, next) {
       if (message.type == 'text') {
         // console.log('sending id: ' + message.id)
         await sendToSmooch(userId, appId, convId, message.content);
-        if (appId == '5ea6f52b536ecb000f732a35') {
-          if (message.content.includes('Maaf yah belum bisa bantu lebih banyak') || message.content.includes('aku arahin langsung ke Real Agent yah')) {
-            switchboardPassControl(appId, convId);
-          }
-        }
+        // if (appId == '5ea6f52b536ecb000f732a35') {
+        //   if (message.content.includes('Maaf yah belum bisa bantu lebih banyak') || message.content.includes('aku arahin langsung ke Real Agent yah')) {
+        //     switchboardPassControl(appId, convId);
+        //   }
+        // }
         // dumpChat(req.body.userId, message.type, message.content)
       } else {
         if (message.payload.template_type == 'carousel') {
@@ -222,98 +222,90 @@ router.post('/conversation/handover', function (req, res, next) {
   }
 })
 
-async function dumpChat(userId, type, chatContent) {
-  try {
-    const chatlog = await chatlog_model.create({
-      user_id: userId,
-      chat_type: type,
-      chat_content: chatContent
-    });
-    return chatlog;
-  } catch (err) {
-    console.log(err)
-  }
-}
+// async function dumpChat(userId, type, chatContent) {
+//   try {
+//     const chatlog = await chatlog_model.create({
+//       user_id: userId,
+//       chat_type: type,
+//       chat_content: chatContent
+//     });
+//     return chatlog;
+//   } catch (err) {
+//     console.log(err)
+//   }
+// }
 
-function sendLocationToBot(userId, chatContent) {
-  console.log('-- send location to Bot --')
-  axios({
-    method: 'POST',
-    url: BOT_URL,
-    data: {
-      userId: userId,
-      messages: [{
-        type: "data",
-        payload: {
-          type: 'location',
-          latitude: chatContent.coordinates.lat,
-          langitude: chatContent.coordinates.long
-        }
-      }]
-    }
-  }).then(function (response) {
-    console.log('Sent to BOT: %s', response.status);
-  });
-}
+// function sendLocationToBot(userId, chatContent) {
+//   console.log('-- send location to Bot --')
+//   axios({
+//     method: 'POST',
+//     url: BOT_URL,
+//     data: {
+//       userId: userId,
+//       messages: [{
+//         type: "data",
+//         payload: {
+//           type: 'location',
+//           latitude: chatContent.coordinates.lat,
+//           langitude: chatContent.coordinates.long
+//         }
+//       }]
+//     }
+//   }).then(function (response) {
+//     console.log('Sent to BOT: %s', response.status);
+//   });
+// }
 
-function sendFileToBot(userId, chatContent) {
-  console.log('-- send file to Bot --')
-  axios({
-    method: 'POST',
-    url: BOT_URL,
-    data: {
-      userId: userId,
-      messages: [{
-        type: "data",
-        payload: {
-          type: chatContent.mediaType,
-          url: chatContent.mediaUrl
-        }
-      }]
-    }
-  }).then(function (response) {
-    console.log('Sent to BOT: %s', response.status);
-  });
-}
+// function sendFileToBot(userId, chatContent) {
+//   console.log('-- send file to Bot --')
+//   axios({
+//     method: 'POST',
+//     url: BOT_URL,
+//     data: {
+//       userId: userId,
+//       messages: [{
+//         type: "data",
+//         payload: {
+//           type: chatContent.mediaType,
+//           url: chatContent.mediaUrl
+//         }
+//       }]
+//     }
+//   }).then(function (response) {
+//     console.log('Sent to BOT: %s', response.status);
+//   });
+// }
 
-function sendImageToBot(userId, chatContent) {
-  console.log('-- send image to Bot --')
-  axios({
-    method: 'POST',
-    url: BOT_URL,
-    data: {
-      userId: userId,
-      messages: [{
-        type: "data",
-        payload: {
-          type: 'image',
-          url: chatContent.mediaUrl
-        }
-      }]
-    }
-  }).then(function (response) {
-    console.log('Sent to BOT: %s', response.status);
-  });
-}
+// function sendImageToBot(userId, chatContent) {
+//   console.log('-- send image to Bot --')
+//   axios({
+//     method: 'POST',
+//     url: BOT_URL,
+//     data: {
+//       userId: userId,
+//       messages: [{
+//         type: "data",
+//         payload: {
+//           type: 'image',
+//           url: chatContent.mediaUrl
+//         }
+//       }]
+//     }
+//   }).then(function (response) {
+//     console.log('Sent to BOT: %s', response.status);
+//   });
+// }
 
-function sendToBot(displayName, userId, chatContent) {
-  console.log('-- send text to Bot --')
-  axios({
-    method: 'POST',
-    url: BOT_URL,
-    data: {
-      userId: userId,
-      messages: [{
-        type: "text",
-        content: chatContent,
-        payload: {
-          username: displayName
-        }
-      }]
-    }
-  }).then(function (response) {
-    console.log('Sent to BOT: %s', response.status);
-  });
+function sendToBot(botPayloadJson) {
+  console.log('-- send message to Bot --')
+  console.log(botPayloadJson)
+  // axios({
+  //   method: 'POST',
+  //   url: BOT_URL,
+  //   data: botPayloadJson
+  // }).then(function (response) {
+  //   console.log('Sent to BOT: %s', response.status);
+  // });
 }
 
 async function sendToSmooch(userId, appId, convId, messageContent) {
@@ -592,6 +584,7 @@ function finalSendtoSmooch(userId, appId, convId, messagePost) {
     });
   } else {
     // winston.log('info', messagePost);
+    console.log()
   }
 }
 
@@ -615,6 +608,38 @@ function goLogging(status, process, to, message) {
     to: to,
     message: message
   });
+}
+
+function generateBotPayload (generatedUserId, messagePayload) {
+  var additionalPayload = {
+    user_id: generatedUserId,
+    message_id: messagePayload.id,
+    channel: messagePayload.source.type,
+    extra_details: {}
+  }
+  var key = messagePayload.content.type;
+  var content;
+
+  if (messagePayload.content.type == 'text') {
+    content = messagePayload.content.text
+  } else if (messagePayload.content.type == 'image') {
+    // content = messagePayload.content.mediaUrl
+    content = 'image sample'
+  } else if (messagePayload.content.type == 'file') {
+    // content = messagePayload.content.mediaUrl
+    content = 'file sample'
+  } else {
+    // content = messagePayload.content.mediaUrl
+    content = 'other sample'
+  }
+
+  return {
+    sender: generatedUserId,
+    to: BOT_TOKEN,
+    [key]: content,
+    type: messagePayload.content.type,
+    payload: additionalPayload
+  }
 }
 
 module.exports = router;
