@@ -97,8 +97,17 @@ router.post('/webhook', function (req, res, next) {
   res.status(200).send({});
 })
 
-router.post('/conv-created', function(req, res, next) {
-  console.log(JSON.stringify(req.body))
+router.post('/conversation/test', function(req, res, next) {
+  var chatContent = req.body.text;
+  var userId = '5613c341a4da96f98cb3f3a2'
+  axios({
+    method: 'POST',
+    url: BOT_URL,
+    data: generateBotPayload(userId, {content: {text: chatContent, type: 'text'}, id: 'test-message-id', source: {type: 'whatsapp'}})
+  }).then(function (response) {
+    console.log('Sent to BOT: %s', response.status);
+  });
+  
   res.status(200).send({});
 })
 
