@@ -43,52 +43,6 @@ router.get('/webhook', function (req, res, next) {
   res.status(200).send({});
 })
 
-// router.post('/delivery', function (req, res, next) {
-//   var appId = req.body.app.id;
-  // req.body.events.forEach(event => {
-  //   var userId = event.payload.user.id;
-  //   var convId = event.payload.conversation.id;
-  //   var newUserId = userId + '_' + appId + '_' + convId;
-  //   chatlog_model.findAll({
-  //     where: {
-  //       user_id: newUserId
-  //     },
-  //     order: [
-  //       ['id', 'ASC']
-  //     ]
-  //   }).then(nextChat => {
-  //     if (nextChat.length > 0) {
-  //       chatlog_model.destroy({
-  //         where: {
-  //           id: nextChat[0].dataValues.id
-  //         }
-  //       })
-  //       if (nextChat.length > 1) {
-  //         var chatType = nextChat[1].dataValues.chat_type
-  //         let userId = nextChat[1].dataValues.user_id.split('_')[0];
-  //         let appId = nextChat[1].dataValues.user_id.split('_')[1];
-  //         var convId = nextChat[1].dataValues.user_id.split('_')[2];
-
-  //         if (chatType == 'carousel') {
-  //           sendCarouseltoSmooch(userId, appId, convId, JSON.parse(nextChat[1].dataValues.chat_content));
-  //         } else if (chatType == 'image') {
-  //           sendImagetoSmooch(userId, appId, convId, JSON.parse(nextChat[1].dataValues.chat_content));
-  //         } else if (chatType == 'location') {
-  //           sendLocationtoSmooch(userId, appId, convId, JSON.parse(nextChat[1].dataValues.chat_content));
-  //         } else if (chatType == 'button') {
-  //           console.log('not suppported on Smooch')
-  //         } else if (chatType == 'text') {
-  //           sendToSmooch(userId, appId, convId, nextChat[1].dataValues.chat_content);
-  //         } else {
-  //           sendFiletoSmooch(userId, appId, convId, JSON.parse(nextChat[1].dataValues.chat_content));
-  //         }
-  //       }
-  //     }
-  //   })
-  // });
-//   res.status(200).send({})
-// })
-
 router.post('/webhook', function (req, res, next) {
   var appId = req.body.app.id;
   console.log(JSON.stringify(req.body))
@@ -98,13 +52,15 @@ router.post('/webhook', function (req, res, next) {
       var convChannel = event.payload.message.source.type;
       var convIntegrationId = event.payload.message.source.integrationId;
       var convId = event.payload.conversation.id;
-      console.log(generateBotPayload('useridtesting', event.payload.message))
+      
+      console.log(JSON.stringify(generateBotPayload('useridtesting', event.payload.message)))
+
       if ('activeSwitchboardIntegration' in event.payload.conversation) {
         var convSwitchboardName = event.payload.conversation.activeSwitchboardIntegration.name;
         console.log('inbound: ' + event.payload.message.author.displayName + ' switchboard: ' + event.payload.conversation.activeSwitchboardIntegration.name)
         if (CHANNEL_ACTIVE_ACCOUNT.includes(convIntegrationId)) {
           var displayName = event.payload.message.author.displayName;
-          if (convSwitchboardName == 'zd-answerBot') {
+          if (convSwitchboardName == 'bot') {
             if (BYPASS_ZD == 'true') {
               console.log('=== Inbound Chat from:  ' + displayName + ', Pass Control to Zendesk ===')
               switchboardPassControl(appId, convId);
@@ -151,10 +107,7 @@ router.post('/conversation/reply', async function (req, res, next) {
   let userId = req.body.userId.split('_')[0];
   let appId = req.body.userId.split('_')[1];
   var convId = req.body.userId.split('_')[2];
-  // var passToZd = false;
-
   var response;
-  // console.log(JSON.stringify(req.body))
 
   goLogging('info', P_SEND_TO_SMOOCH, req.body.userId, req.body)
 
@@ -584,7 +537,7 @@ function finalSendtoSmooch(userId, appId, convId, messagePost) {
     });
   } else {
     // winston.log('info', messagePost);
-    console.log()
+    console.log(messagePost)
   }
 }
 
