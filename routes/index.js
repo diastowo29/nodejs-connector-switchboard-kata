@@ -12,6 +12,9 @@ var SMOOCH_KEY_SECRET = process.env.SMOOCH_KEY_SECRET || "xxx";
 var BYPASS_ZD = process.env.BYPASS_ZD || "false";
 var CHANNEL_ACTIVE_ACCOUNT = process.env.WA_ACTIVE_ACCOUNT || "62d7a492294f2700f0e3b08c";
 var BOT_ALIAS = process.env.BOT_ALIAS || "Bita";
+var BOT_AUTH = process.env.BOT_AUTH || 'xxx';
+var BOT_PROD_AUTH = process.env.BOT_PROD_AUTH || 'xxx';
+
 var LOG_TOKEN = '';
 
 basicAuth.username = SMOOCH_KEY_ID;
@@ -111,13 +114,19 @@ router.post('/conversation/test', function(req, res, next) {
     }
   }); 
 
-  axios({
+  var axiosRequest = {
     method: 'POST',
     url: BOT_URL,
+    headers: {
+      Authorization: BOT_AUTH
+    },
     data: jsonPayload
-  }).then(function (response) {
-    console.log('Sent to BOT: %s', response.status);
-  });
+  }
+
+  // axios(axiosRequest).then(function (response) {
+  //   console.log('Sent to BOT: %s', response.status);
+  // });
+
   goLogging('info', P_TESTING, userId, jsonPayload)
   
   res.status(200).send({});
@@ -276,6 +285,9 @@ function sendToBot(botPayloadJson) {
   // axios({
   //   method: 'POST',
   //   url: BOT_URL,
+  //   headers: {
+    //    Authorization: BOT_AUTH 
+  //   } 
   //   data: botPayloadJson
   // }).then(function (response) {
   //   console.log('Sent to BOT: %s', response.status);
