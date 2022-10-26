@@ -537,7 +537,7 @@ function finalSendtoSmooch(userId, appId, convId, messagePost) {
     });
   } else {
     // winston.log('info', messagePost);
-    console.log(messagePost)
+    console.log(JSON.stringify(messagePost))
   }
 }
 
