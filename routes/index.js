@@ -10,7 +10,7 @@ var basicAuth = defaultClient.authentications['basicAuth'];
 var SMOOCH_KEY_ID = process.env.SMOOCH_KEY_ID || "xxx";
 var SMOOCH_KEY_SECRET = process.env.SMOOCH_KEY_SECRET || "xxx";
 var BYPASS_ZD = process.env.BYPASS_ZD || "false";
-var WA_ACTIVE_ACCOUNT = process.env.WA_ACTIVE_ACCOUNT || "62d7a492294f2700f0e3b08c";
+var CHANNEL_ACTIVE_ACCOUNT = process.env.WA_ACTIVE_ACCOUNT || "62d7a492294f2700f0e3b08c";
 var BOT_ALIAS = process.env.BOT_ALIAS || "Bita";
 var LOG_TOKEN = '';
 
@@ -102,7 +102,7 @@ router.post('/webhook', function (req, res, next) {
       if ('activeSwitchboardIntegration' in event.payload.conversation) {
         var convSwitchboardName = event.payload.conversation.activeSwitchboardIntegration.name;
         console.log('inbound: ' + event.payload.message.author.displayName + ' switchboard: ' + event.payload.conversation.activeSwitchboardIntegration.name)
-        if (WA_ACTIVE_ACCOUNT.includes(convIntegrationId)) {
+        if (CHANNEL_ACTIVE_ACCOUNT.includes(convIntegrationId)) {
           var displayName = event.payload.message.author.displayName;
           if (convSwitchboardName == 'zd-answerBot') {
             if (BYPASS_ZD == 'true') {
