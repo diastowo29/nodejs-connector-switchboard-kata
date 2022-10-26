@@ -261,27 +261,6 @@ function sendToBot(botPayloadJson) {
   // });
 }
 
-async function sendToSmooch(userId, appId, convId, messageContent) {
-  // var apiInstance = new SunshineConversationsClient.MessagesApi();
-  var messagePost = new SunshineConversationsClient.MessagePost();
-  messagePost.author = {
-    type: 'business',
-    displayName: BOT_ALIAS
-  }
-  messagePost.content = {
-    type: 'text',
-    text: messageContent
-  }
-
-  // await apiInstance.postMessage(appId, convId, messagePost).then(function(data) {
-  //   console.log('API POST Message called successfully. Returned data: ' + data);
-  // }, function(error) {
-  //   console.error(error);
-  // });
-
-  return await finalSendtoSmooch(userId, appId, convId, messagePost);
-}
-
 async function sendQuickReplySmooch (userId, appId, convId, messagePayload) {
   // console.log('sendquick to smooch')
   var messagePost = new SunshineConversationsClient.MessagePost();
@@ -358,6 +337,27 @@ async function sendQuickReplySmooch (userId, appId, convId, messagePayload) {
   }
 
   console.log(JSON.stringify(messagePost))
+  return await finalSendtoSmooch(userId, appId, convId, messagePost);
+}
+
+async function sendToSmooch(userId, appId, convId, messageContent) {
+  // var apiInstance = new SunshineConversationsClient.MessagesApi();
+  var messagePost = new SunshineConversationsClient.MessagePost();
+  messagePost.author = {
+    type: 'business',
+    displayName: BOT_ALIAS
+  }
+  messagePost.content = {
+    type: 'text',
+    text: messageContent
+  }
+
+  // await apiInstance.postMessage(appId, convId, messagePost).then(function(data) {
+  //   console.log('API POST Message called successfully. Returned data: ' + data);
+  // }, function(error) {
+  //   console.error(error);
+  // });
+
   return await finalSendtoSmooch(userId, appId, convId, messagePost);
 }
 
@@ -593,6 +593,28 @@ function generateBotPayload (generatedUserId, messagePayload) {
     type: messagePayload.content.type,
     payload: additionalPayload
   }
+}
+
+function generateSmoochPayload (messageContent) {
+  var messagePost = new SunshineConversationsClient.MessagePost();
+  messagePost.author = {
+    type: 'business',
+    displayName: BOT_ALIAS
+  }
+
+  if (messageContent.type == 'text') {
+    messagePost.content = {
+      type: messageContent.type,
+      text: messageContent
+    }
+  } else {
+    messagePost.content = {
+      type: messageContent.type,
+      [messageContent.type]: messageContent.items.originalContentUrl
+    }
+  }
+
+  return messagePost;
 }
 
 module.exports = router;
