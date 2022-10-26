@@ -18,12 +18,13 @@ basicAuth.username = SMOOCH_KEY_ID;
 basicAuth.password = SMOOCH_KEY_SECRET;
 
 var P_SEND_TO_SMOOCH = 'sendToSmooch'
+var P_TESTING = 'TESTING_PHASE'
 var P_HANDOVER = 'handover'
 
 var BOT_TOKEN = process.env.BOT_TOKEN || "xxx";
 let BOT_URL = 'https://r2.app.yellow.ai/integrations/sendMessage/' + BOT_TOKEN;
 
-var gotoSmooch = false;
+var gotoSmooch = true;
 
 var winston = require('winston');
 var { Loggly } = require('winston-loggly-bulk');
@@ -100,13 +101,24 @@ router.post('/webhook', function (req, res, next) {
 router.post('/conversation/test', function(req, res, next) {
   var chatContent = req.body.text;
   var userId = '5613c341a4da96f98cb3f3a2'
+  var jsonPayload = generateBotPayload(userId, {
+    content: {
+      text: chatContent, type: 'text'
+    }, 
+    id: 'test-message-id', 
+    source: {
+      type: 'whatsapp'
+    }
+  }); 
+
   axios({
     method: 'POST',
     url: BOT_URL,
-    data: generateBotPayload(userId, {content: {text: chatContent, type: 'text'}, id: 'test-message-id', source: {type: 'whatsapp'}})
+    data: jsonPayload
   }).then(function (response) {
     console.log('Sent to BOT: %s', response.status);
   });
+  goLogging('info', P_TESTING, userId, jsonPayload)
   
   res.status(200).send({});
 })
@@ -535,7 +547,7 @@ function sendCarouseltoSmooch(userId, appId, convId, messagePayload) {
 function finalSendtoSmooch(userId, appId, convId, messagePost) {
 
   if (gotoSmooch) {
-    // goLogging('info', P_SEND_TO_SMOOCH, userId + '_' + appId + '_' + convId, messagePost)
+    goLogging('info', P_SEND_TO_SMOOCH, userId + '_' + appId + '_' + convId, messagePost)
     var apiInstance = new SunshineConversationsClient.MessagesApi();
 
     return apiInstance.postMessage(appId, convId, messagePost).then(function (data) {
@@ -546,6 +558,7 @@ function finalSendtoSmooch(userId, appId, convId, messagePost) {
     });
   } else {
     // winston.log('info', messagePost);
+    goLogging('info', P_SEND_TO_SMOOCH, userId + '_' + appId + '_' + convId, messagePost)
     console.log(JSON.stringify(messagePost))
   }
 }
