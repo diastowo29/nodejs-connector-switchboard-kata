@@ -49,7 +49,7 @@ router.get('/webhook', function (req, res, next) {
 
 router.post('/webhook', function (req, res, next) {
   var appId = req.body.app.id;
-  console.log(JSON.stringify(req.body))
+  // console.log(JSON.stringify(req.body))
   // console.log('BOT ALIAS: ' + BOT_ALIAS + ' | BYPASS ZD: ' + BYPASS_ZD)
   req.body.events.forEach(event => {
     if (event.type != 'conversation:read') {
@@ -95,6 +95,7 @@ router.post('/webhook', function (req, res, next) {
 router.post('/conversation/test', function(req, res, next) {
   var chatContent = req.body.text;
   var userId = '5613c341a4da96f98cb3f3a2'
+  var botResponse;
   var jsonPayload = generateBotPayload(userId, {
     content: {
       text: chatContent, type: 'text'
@@ -103,7 +104,7 @@ router.post('/conversation/test', function(req, res, next) {
     source: {
       type: 'whatsapp'
     }
-  }); 
+  });
 
   var axiosRequest = {
     method: 'POST',
@@ -116,11 +117,12 @@ router.post('/conversation/test', function(req, res, next) {
 
   axios(axiosRequest).then(function (response) {
     console.log('Sent to BOT: %s', response.status);
+    botResponse = response;
   });
 
   goLogging('info', P_TESTING, userId, jsonPayload)
   
-  res.status(200).send({});
+  res.status(200).send({ response: botResponse });
 })
 
 router.post('/conversation/reply', async function (req, res, next) {
@@ -129,9 +131,6 @@ router.post('/conversation/reply', async function (req, res, next) {
   let appId = req.body.userId.split('_')[1];
   var convId = req.body.userId.split('_')[2];
   var response;
-
-  console.log(SMOOCH_KEY_ID)
-  console.log(SMOOCH_KEY_SECRET)
 
   goLogging('info', P_SEND_TO_SMOOCH, req.body.userId, req.body)
   if (userId == undefined || appId == undefined || convId == undefined) {
@@ -438,11 +437,8 @@ function finalSendtoSmooch(userId, appId, convId, messagePost) {
 
     try {
       return apiInstance.postMessage(appId, convId, messagePost).then(function (data) {
-        // console.log('API POST Message called successfully. Returned data: ' + data);
-        // console.log(data)
         return data
       }, function (error) {
-        // console.error('error sending to smooch: ' + error);
         goLogging('error', P_SEND_TO_SMOOCH, userId + '_' + appId + '_' + convId, error.body)
         return {error: error.body};
     });
