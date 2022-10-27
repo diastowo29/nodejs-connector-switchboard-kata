@@ -563,12 +563,16 @@ function finalSendtoSmooch(userId, appId, convId, messagePost) {
     goLogging('info', P_SEND_TO_SMOOCH, userId + '_' + appId + '_' + convId, messagePost)
     var apiInstance = new SunshineConversationsClient.MessagesApi();
 
-    return apiInstance.postMessage(appId, convId, messagePost).then(function (data) {
-      console.log('API POST Message called successfully. Returned data: ' + data);
-    }, function (error) {
-      console.error('error sending to smooch: ' + error);
-      goLogging('error', P_SEND_TO_SMOOCH, userId + '_' + appId + '_' + convId, error.body)
-    });
+    try {
+      return apiInstance.postMessage(appId, convId, messagePost).then(function (data) {
+        console.log('API POST Message called successfully. Returned data: ' + data);
+      }, function (error) {
+        console.error('error sending to smooch: ' + error);
+        goLogging('error', P_SEND_TO_SMOOCH, userId + '_' + appId + '_' + convId, error.body)
+      });
+    } catch {
+      console.log('error post message')
+    }
   } else {
     // winston.log('info', messagePost);
     goLogging('info', P_SEND_TO_SMOOCH, userId + '_' + appId + '_' + convId, messagePost)
