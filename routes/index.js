@@ -146,7 +146,8 @@ router.post('/conversation/reply', async function (req, res, next) {
     // if (i == 0) {
       if (message.type == 'text') {
         // console.log('sending id: ' + message.id)
-        await sendToSmooch(userId, appId, convId, message.content);
+        var smoochResponse = await sendToSmooch(userId, appId, convId, message.content);
+        response = smoochResponse
         // if (appId == '5ea6f52b536ecb000f732a35') {
         //   if (message.content.includes('Maaf yah belum bisa bantu lebih banyak') || message.content.includes('aku arahin langsung ke Real Agent yah')) {
         //     switchboardPassControl(appId, convId);
@@ -183,7 +184,7 @@ router.post('/conversation/reply', async function (req, res, next) {
     // }
     i++;
   }
-  res.status(200).send({});
+  res.status(200).send({response});
 });
 
 router.post('/conversation/handover', function (req, res, next) {
