@@ -49,7 +49,7 @@ router.get('/webhook', function (req, res, next) {
 
 router.post('/webhook', function (req, res, next) {
   var appId = req.body.app.id;
-  // console.log(JSON.stringify(req.body))
+  console.log(JSON.stringify(req.body))
   // console.log('BOT ALIAS: ' + BOT_ALIAS + ' | BYPASS ZD: ' + BYPASS_ZD)
   req.body.events.forEach(event => {
     if (event.type != 'conversation:read') {
@@ -75,15 +75,6 @@ router.post('/webhook', function (req, res, next) {
                 // console.log((req.headers))
                 console.log('=== Inbound Chat from:  ' + displayName + ', Pass to Bot ===')
                 sendToBot(generateBotPayload(userIdForBot, messagePayload))
-                // if (messagePayload.content.type == 'text') {
-                //   sendToBot(displayName, userIdForBot, messagePayload.content.text);
-                // } else if (messagePayload.content.type == 'location') {
-                //   sendLocationToBot(userIdForBot, messagePayload.content)
-                // } else if (messagePayload.content.type == 'file') {
-                //   sendFileToBot(userIdForBot, messagePayload.content);
-                // } else if (messagePayload.content.type == 'image') {
-                //   sendImageToBot(userIdForBot, messagePayload.content)
-                // }
               }
             }
           }
@@ -139,52 +130,49 @@ router.post('/conversation/reply', async function (req, res, next) {
   var convId = req.body.userId.split('_')[2];
   var response;
 
-  goLogging('info', P_SEND_TO_SMOOCH, req.body.userId, req.body)
+  console.log(SMOOCH_KEY_ID)
+  console.log(SMOOCH_KEY_SECRET)
 
-  let i = 0;
-  for (const message of req.body.messages) {
-    // if (i == 0) {
-      if (message.type == 'text') {
-        // console.log('sending id: ' + message.id)
-        var smoochResponse = await sendToSmooch(userId, appId, convId, message.content);
-        response = smoochResponse
-        // if (appId == '5ea6f52b536ecb000f732a35') {
-        //   if (message.content.includes('Maaf yah belum bisa bantu lebih banyak') || message.content.includes('aku arahin langsung ke Real Agent yah')) {
-        //     switchboardPassControl(appId, convId);
-        //   }
-        // }
-        // dumpChat(req.body.userId, message.type, message.content)
-      } else {
-        if (message.payload.template_type == 'carousel') {
-          await sendCarouseltoSmooch(userId, appId, convId, message.payload);
-        } else if (message.payload.template_type == 'image') {
-          await sendImagetoSmooch(userId, appId, convId, message.payload);
-        } else if (message.payload.template_type == 'location') {
-          await sendLocationtoSmooch(userId, appId, convId, message.payload);
-        } else if (message.payload.template_type == 'button') {
-          console.log('not suppported on Smooch')
-          // response =  {
-          //   error: 'template_type: \'button\' not supported on Smooch'
-          // }
-        } else if (message.payload.template_type == 'text') {
-          await sendQuickReplySmooch(userId, appId, convId, message.payload);
-        } else if (message.payload.template_type == 'list_reply') {
-          await sendQuickReplySmooch(userId, appId, convId, message.payload);
+  goLogging('info', P_SEND_TO_SMOOCH, req.body.userId, req.body)
+  if (userId == undefined || appId == undefined || convId == undefined) {
+    res.status(422).send({
+      error: 'invalid userId format'
+    });
+  } else {  
+    let i = 0;
+    for (const message of req.body.messages) {
+        if (message.type == 'text') {
+          var smoochResponse = await sendToSmooch(userId, appId, convId, message.content);
+          response = smoochResponse;
         } else {
-          await sendFiletoSmooch(userId, appId, convId, message.payload);
+          if (message.payload.template_type == 'carousel') {
+            await sendCarouseltoSmooch(userId, appId, convId, message.payload);
+          } else if (message.payload.template_type == 'image') {
+            await sendImagetoSmooch(userId, appId, convId, message.payload);
+          } else if (message.payload.template_type == 'location') {
+            await sendLocationtoSmooch(userId, appId, convId, message.payload);
+          } else if (message.payload.template_type == 'button') {
+            console.log('not suppported on Smooch')
+          } else if (message.payload.template_type == 'text') {
+            await sendQuickReplySmooch(userId, appId, convId, message.payload);
+          } else if (message.payload.template_type == 'list_reply') {
+            await sendQuickReplySmooch(userId, appId, convId, message.payload);
+          } else {
+            await sendFiletoSmooch(userId, appId, convId, message.payload);
+          }
         }
-        // dumpChat(req.body.userId, message.type, JSON.stringify(message.payload))
-      }
-    // } else {
-    //   if (message.type == 'text') {
-    //     // dumpChat(req.body.userId, message.type, message.content)
-    //   } else {
-    //     // dumpChat(req.body.userId, message.type, JSON.stringify(message.payload))
-    //   }
-    // }
-    i++;
+      i++;
+    }
+    var statusCode;
+    if ('error' in response) {
+      statusCode = 422
+      response = response.error
+    } else {
+      statusCode = 200
+    }
+    res.status(statusCode).send({response});
   }
-  res.status(200).send({response});
+
 });
 
 router.post('/conversation/handover', function (req, res, next) {
@@ -205,80 +193,6 @@ router.post('/conversation/handover', function (req, res, next) {
     })
   }
 })
-
-// async function dumpChat(userId, type, chatContent) {
-//   try {
-//     const chatlog = await chatlog_model.create({
-//       user_id: userId,
-//       chat_type: type,
-//       chat_content: chatContent
-//     });
-//     return chatlog;
-//   } catch (err) {
-//     console.log(err)
-//   }
-// }
-
-// function sendLocationToBot(userId, chatContent) {
-//   console.log('-- send location to Bot --')
-//   axios({
-//     method: 'POST',
-//     url: BOT_URL,
-//     data: {
-//       userId: userId,
-//       messages: [{
-//         type: "data",
-//         payload: {
-//           type: 'location',
-//           latitude: chatContent.coordinates.lat,
-//           langitude: chatContent.coordinates.long
-//         }
-//       }]
-//     }
-//   }).then(function (response) {
-//     console.log('Sent to BOT: %s', response.status);
-//   });
-// }
-
-// function sendFileToBot(userId, chatContent) {
-//   console.log('-- send file to Bot --')
-//   axios({
-//     method: 'POST',
-//     url: BOT_URL,
-//     data: {
-//       userId: userId,
-//       messages: [{
-//         type: "data",
-//         payload: {
-//           type: chatContent.mediaType,
-//           url: chatContent.mediaUrl
-//         }
-//       }]
-//     }
-//   }).then(function (response) {
-//     console.log('Sent to BOT: %s', response.status);
-//   });
-// }
-
-// function sendImageToBot(userId, chatContent) {
-//   console.log('-- send image to Bot --')
-//   axios({
-//     method: 'POST',
-//     url: BOT_URL,
-//     data: {
-//       userId: userId,
-//       messages: [{
-//         type: "data",
-//         payload: {
-//           type: 'image',
-//           url: chatContent.mediaUrl
-//         }
-//       }]
-//     }
-//   }).then(function (response) {
-//     console.log('Sent to BOT: %s', response.status);
-//   });
-// }
 
 function sendToBot(botPayloadJson) {
   console.log('-- send message to Bot --')
@@ -375,7 +289,6 @@ async function sendQuickReplySmooch (userId, appId, convId, messagePayload) {
 }
 
 async function sendToSmooch(userId, appId, convId, messageContent) {
-  // var apiInstance = new SunshineConversationsClient.MessagesApi();
   var messagePost = new SunshineConversationsClient.MessagePost();
   messagePost.author = {
     type: 'business'
@@ -385,18 +298,10 @@ async function sendToSmooch(userId, appId, convId, messageContent) {
     type: 'text',
     text: messageContent
   }
-
-  // await apiInstance.postMessage(appId, convId, messagePost).then(function(data) {
-  //   console.log('API POST Message called successfully. Returned data: ' + data);
-  // }, function(error) {
-  //   console.error(error);
-  // });
-
   return await finalSendtoSmooch(userId, appId, convId, messagePost);
 }
 
 function sendImagetoSmooch(userId, appId, convId, messagePayload) {
-  // var apiInstance = new SunshineConversationsClient.MessagesApi();
   var messagePost = new SunshineConversationsClient.MessagePost();
   messagePost.author = {
     type: 'business'
@@ -406,18 +311,10 @@ function sendImagetoSmooch(userId, appId, convId, messagePayload) {
     type: 'image',
     mediaUrl: messagePayload.items.originalContentUrl
   }
-
-  // apiInstance.postMessage(appId, convId, messagePost).then(function(data) {
-  //   console.log('API POST Message called successfully. Returned data: ' + data);
-  // }, function(error) {
-  //   console.error(error);
-  // });
-  finalSendtoSmooch(userId, appId, convId, messagePost);
-  return messagePost;
+  return await finalSendtoSmooch(userId, appId, convId, messagePost);
 }
 
 function sendLocationtoSmooch(userId, appId, convId, messagePayload) {
-  // var apiInstance = new SunshineConversationsClient.MessagesApi();
   var messagePost = new SunshineConversationsClient.MessagePost();
   messagePost.author = {
     type: 'business'
@@ -434,19 +331,12 @@ function sendLocationtoSmooch(userId, appId, convId, messagePayload) {
       name: messagePayload.items.title
     }
   }
-
-  // apiInstance.postMessage(appId, convId, messagePost).then(function(data) {
-  //   console.log('API POST Message called successfully. Returned data: ' + data);
-  // }, function(error) {
-  //   console.error(error);
-  // });
   finalSendtoSmooch(userId, appId, convId, messagePost);
   return messagePost;
 }
 
 
 function sendFiletoSmooch(userId, appId, convId, messagePayload) {
-  // var apiInstance = new SunshineConversationsClient.MessagesApi();
   var messagePost = new SunshineConversationsClient.MessagePost();
   messagePost.author = {
     type: 'business'
@@ -456,12 +346,6 @@ function sendFiletoSmooch(userId, appId, convId, messagePayload) {
     type: 'file',
     mediaUrl: messagePayload.items.originalContentUrl
   }
-
-  // apiInstance.postMessage(appId, convId, messagePost).then(function(data) {
-  //   console.log('API POST Message called successfully. Returned data: ' + data);
-  // }, function(error) {
-  //   console.error(error);
-  // });
   finalSendtoSmooch(userId, appId, convId, messagePost);
   return messagePost;
 }
@@ -497,12 +381,6 @@ function hcSendCarouseltoSmooch(userId, appId, convId, messagePayload) {
     // displayName: BOT_ALIAS
   }
   messagePost.content = carouselPayload;
-
-  // apiInstance.postMessage(appId, convId, messagePost).then(function(data) {
-  //   console.log('API POST Message called successfully. Returned data: ' + data);
-  // }, function(error) {
-  //   console.error(error);
-  // });
 
   finalSendtoSmooch(userId, appId, convId, messagePost);
   return messagePost;
@@ -548,11 +426,6 @@ function sendCarouseltoSmooch(userId, appId, convId, messagePayload) {
   }
   messagePost.content = carouselPayload;
 
-  // apiInstance.postMessage(appId, convId, messagePost).then(function(data) {
-  //   console.log('API POST Message called successfully. Returned data: ' + data);
-  // }, function(error) {
-  //   console.error(error);
-  // });
   finalSendtoSmooch(userId, appId, convId, messagePost);
   return messagePost;
 }
@@ -565,13 +438,16 @@ function finalSendtoSmooch(userId, appId, convId, messagePost) {
 
     try {
       return apiInstance.postMessage(appId, convId, messagePost).then(function (data) {
-        console.log('API POST Message called successfully. Returned data: ' + data);
+        // console.log('API POST Message called successfully. Returned data: ' + data);
+        // console.log(data)
+        return data
       }, function (error) {
-        console.error('error sending to smooch: ' + error);
+        // console.error('error sending to smooch: ' + error);
         goLogging('error', P_SEND_TO_SMOOCH, userId + '_' + appId + '_' + convId, error.body)
-      });
-    } catch {
-      console.log('error post message')
+        return {error: error.body};
+    });
+    } catch (err) {
+      return {error: err};
     }
   } else {
     // winston.log('info', messagePost);
@@ -614,15 +490,8 @@ function generateBotPayload (generatedUserId, messagePayload) {
 
   if (messagePayload.content.type == 'text') {
     content = messagePayload.content.text
-  } else if (messagePayload.content.type == 'image') {
-    content = messagePayload.content.mediaUrl
-    // content = 'image sample'
-  } else if (messagePayload.content.type == 'file') {
-    content = messagePayload.content.mediaUrl
-    // content = 'file sample'
   } else {
     content = messagePayload.content.mediaUrl
-    // content = 'other sample'
   }
 
   return {
