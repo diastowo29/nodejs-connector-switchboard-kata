@@ -298,8 +298,8 @@ async function sendQuickReplySmooch (userId, appId, convId, messagePayload) {
   // console.log('sendquick to smooch')
   var messagePost = new SunshineConversationsClient.MessagePost();
   messagePost.author = {
-    type: 'business',
-    displayName: BOT_ALIAS
+    type: 'business'
+    // displayName: BOT_ALIAS
   }
   messagePost.content = {
     type: 'text',
@@ -377,8 +377,8 @@ async function sendToSmooch(userId, appId, convId, messageContent) {
   // var apiInstance = new SunshineConversationsClient.MessagesApi();
   var messagePost = new SunshineConversationsClient.MessagePost();
   messagePost.author = {
-    type: 'business',
-    displayName: BOT_ALIAS
+    type: 'business'
+    // displayName: BOT_ALIAS
   }
   messagePost.content = {
     type: 'text',
@@ -398,8 +398,8 @@ function sendImagetoSmooch(userId, appId, convId, messagePayload) {
   // var apiInstance = new SunshineConversationsClient.MessagesApi();
   var messagePost = new SunshineConversationsClient.MessagePost();
   messagePost.author = {
-    type: 'business',
-    displayName: BOT_ALIAS
+    type: 'business'
+    // displayName: BOT_ALIAS
   }
   messagePost.content = {
     type: 'image',
@@ -419,8 +419,8 @@ function sendLocationtoSmooch(userId, appId, convId, messagePayload) {
   // var apiInstance = new SunshineConversationsClient.MessagesApi();
   var messagePost = new SunshineConversationsClient.MessagePost();
   messagePost.author = {
-    type: 'business',
-    displayName: BOT_ALIAS
+    type: 'business'
+    // displayName: BOT_ALIAS
   }
   messagePost.content = {
     type: 'location',
@@ -448,8 +448,8 @@ function sendFiletoSmooch(userId, appId, convId, messagePayload) {
   // var apiInstance = new SunshineConversationsClient.MessagesApi();
   var messagePost = new SunshineConversationsClient.MessagePost();
   messagePost.author = {
-    type: 'business',
-    displayName: BOT_ALIAS
+    type: 'business'
+    // displayName: BOT_ALIAS
   }
   messagePost.content = {
     type: 'file',
@@ -492,8 +492,8 @@ function hcSendCarouseltoSmooch(userId, appId, convId, messagePayload) {
   };
 
   messagePost.author = {
-    type: 'business',
-    displayName: BOT_ALIAS
+    type: 'business'
+    // displayName: BOT_ALIAS
   }
   messagePost.content = carouselPayload;
 
@@ -542,8 +542,8 @@ function sendCarouseltoSmooch(userId, appId, convId, messagePayload) {
   };
 
   messagePost.author = {
-    type: 'business',
-    displayName: BOT_ALIAS
+    type: 'business'
+    // displayName: BOT_ALIAS
   }
   messagePost.content = carouselPayload;
 
@@ -632,8 +632,8 @@ function generateBotPayload (generatedUserId, messagePayload) {
 function generateSmoochPayload (messageContent) {
   var messagePost = new SunshineConversationsClient.MessagePost();
   messagePost.author = {
-    type: 'business',
-    displayName: BOT_ALIAS
+    type: 'business'
+    // displayName: BOT_ALIAS
   }
 
   if (messageContent.type == 'text') {
