@@ -301,7 +301,7 @@ async function sendToSmooch(userId, appId, convId, messageContent) {
   return await finalSendtoSmooch(userId, appId, convId, messagePost);
 }
 
-function sendImagetoSmooch(userId, appId, convId, messagePayload) {
+async function sendImagetoSmooch(userId, appId, convId, messagePayload) {
   var messagePost = new SunshineConversationsClient.MessagePost();
   messagePost.author = {
     type: 'business'
