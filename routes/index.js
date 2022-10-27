@@ -14,6 +14,7 @@ var CHANNEL_ACTIVE_ACCOUNT = process.env.WA_ACTIVE_ACCOUNT || "62d7a492294f2700f
 var BOT_ALIAS = process.env.BOT_ALIAS || "Bita";
 var BOT_AUTH = process.env.BOT_AUTH || 'xxx';
 var BOT_PROD_AUTH = process.env.BOT_PROD_AUTH || 'xxx';
+var BOT_TOKEN = process.env.BOT_TOKEN || "xxx";
 
 var LOG_TOKEN = '';
 
@@ -24,7 +25,6 @@ var P_SEND_TO_SMOOCH = 'sendToSmooch'
 var P_TESTING = 'TESTING_PHASE'
 var P_HANDOVER = 'handover'
 
-var BOT_TOKEN = process.env.BOT_TOKEN || "xxx";
 let BOT_URL = 'https://r2.app.yellow.ai/integrations/sendMessage/' + BOT_TOKEN;
 
 var gotoSmooch = true;
@@ -49,7 +49,7 @@ router.get('/webhook', function (req, res, next) {
 
 router.post('/webhook', function (req, res, next) {
   var appId = req.body.app.id;
-  console.log(JSON.stringify(req.body))
+  // console.log(JSON.stringify(req.body))
   // console.log('BOT ALIAS: ' + BOT_ALIAS + ' | BYPASS ZD: ' + BYPASS_ZD)
   req.body.events.forEach(event => {
     if (event.type != 'conversation:read') {
@@ -57,7 +57,7 @@ router.post('/webhook', function (req, res, next) {
       var convIntegrationId = event.payload.message.source.integrationId;
       var convId = event.payload.conversation.id;
       
-      console.log(JSON.stringify(generateBotPayload('useridtesting', event.payload.message)))
+      // console.log(JSON.stringify(generateBotPayload('useridtesting', event.payload.message)))
 
       if ('activeSwitchboardIntegration' in event.payload.conversation) {
         var convSwitchboardName = event.payload.conversation.activeSwitchboardIntegration.name;
@@ -123,9 +123,9 @@ router.post('/conversation/test', function(req, res, next) {
     data: jsonPayload
   }
 
-  // axios(axiosRequest).then(function (response) {
-  //   console.log('Sent to BOT: %s', response.status);
-  // });
+  axios(axiosRequest).then(function (response) {
+    console.log('Sent to BOT: %s', response.status);
+  });
 
   goLogging('info', P_TESTING, userId, jsonPayload)
   
@@ -281,17 +281,17 @@ router.post('/conversation/handover', function (req, res, next) {
 
 function sendToBot(botPayloadJson) {
   console.log('-- send message to Bot --')
-  console.log(botPayloadJson)
-  // axios({
-  //   method: 'POST',
-  //   url: BOT_URL,
-  //   headers: {
-    //    Authorization: BOT_AUTH 
-  //   } 
-  //   data: botPayloadJson
-  // }).then(function (response) {
-  //   console.log('Sent to BOT: %s', response.status);
-  // });
+  // console.log(botPayloadJson)
+  axios({
+    method: 'POST',
+    url: BOT_URL,
+    headers: {
+       Authorization: BOT_AUTH 
+    },
+    data: botPayloadJson
+  }).then(function (response) {
+    console.log('Sent to BOT: %s', response.status);
+  });
 }
 
 async function sendQuickReplySmooch (userId, appId, convId, messagePayload) {
@@ -610,14 +610,14 @@ function generateBotPayload (generatedUserId, messagePayload) {
   if (messagePayload.content.type == 'text') {
     content = messagePayload.content.text
   } else if (messagePayload.content.type == 'image') {
-    // content = messagePayload.content.mediaUrl
-    content = 'image sample'
+    content = messagePayload.content.mediaUrl
+    // content = 'image sample'
   } else if (messagePayload.content.type == 'file') {
-    // content = messagePayload.content.mediaUrl
-    content = 'file sample'
+    content = messagePayload.content.mediaUrl
+    // content = 'file sample'
   } else {
-    // content = messagePayload.content.mediaUrl
-    content = 'other sample'
+    content = messagePayload.content.mediaUrl
+    // content = 'other sample'
   }
 
   return {
