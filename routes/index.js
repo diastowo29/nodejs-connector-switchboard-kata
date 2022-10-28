@@ -3,6 +3,8 @@ var router = express.Router();
 var SunshineConversationsClient = require('sunshine-conversations-client');
 var defaultClient = SunshineConversationsClient.ApiClient.instance;
 const axios = require('axios');
+const payGen = require("./config/payload.js")
+
 // const { chatlog_model } = require('../sequelize')
 
 var basicAuth = defaultClient.authentications['basicAuth'];
@@ -40,7 +42,7 @@ winston.add(new Loggly({
 }));
 
 router.get('/testing', function (req, res, next) {
-  res.status(200).send(generateBotPayload('userid123', {content: {text: 'halo123'}}, 'image'))
+  res.status(200).send(payGen.doGenerateBotPayload('userid123', payGen.doGenerateSampleMsgPayload('halo')));
 })
 
 router.get('/webhook', function (req, res, next) {
@@ -74,7 +76,7 @@ router.post('/webhook', function (req, res, next) {
                 var userIdForBot = messagePayload.author.userId + '_' + appId + '_' + convId;
                 // console.log((req.headers))
                 console.log('=== Inbound Chat from:  ' + displayName + ', Pass to Bot ===')
-                sendToBot(generateBotPayload(userIdForBot, messagePayload))
+                sendToBot(payGen.doGenerateBotPayload(userIdForBot, messagePayload))
               }
             }
           }
@@ -94,35 +96,17 @@ router.post('/webhook', function (req, res, next) {
 
 router.post('/conversation/test', function(req, res, next) {
   var chatContent = req.body.text;
-  var userId = '5613c341a4da96f98cb3f3a2'
+  var userId = '5613c341a4da96f98cb3f3a2_6225cb52ebe30d00ef9a2e9a_9be4eb9330540f041f42e755'
   var botResponse;
-  var jsonPayload = generateBotPayload(userId, {
-    content: {
-      text: chatContent, type: 'text'
-    }, 
-    id: 'test-message-id', 
-    source: {
-      type: 'whatsapp'
-    }
-  });
+  var jsonPayload = payGen.doGenerateBotPayload(userId, payGen.doGenerateSampleMsgPayload('halo'));
 
-  var axiosRequest = {
-    method: 'POST',
-    url: BOT_URL,
-    headers: {
-      Authorization: BOT_AUTH
-    },
-    data: jsonPayload
-  }
-
-  axios(axiosRequest).then(function (response) {
+  axios(payGen.doGenerateAxiosRequest('POST', BOT_URL, BOT_AUTH, jsonPayload)).then(function (response) {
     console.log('Sent to BOT: %s', response.status);
     botResponse = response;
+    res.status(200).send({ response: botResponse });
+  }).catch(function(err){
+    res.status(err.response.status).send({error: err.response.statusText, payload: jsonPayload})
   });
-
-  goLogging('info', P_TESTING, userId, jsonPayload)
-  
-  res.status(200).send({ response: botResponse });
 })
 
 router.post('/conversation/reply', async function (req, res, next) {
@@ -137,7 +121,7 @@ router.post('/conversation/reply', async function (req, res, next) {
     res.status(422).send({
       error: 'invalid userId format'
     });
-  } else {  
+  } else {
     let i = 0;
     for (const message of req.body.messages) {
         if (message.type == 'text') {
@@ -195,16 +179,11 @@ router.post('/conversation/handover', function (req, res, next) {
 
 function sendToBot(botPayloadJson) {
   console.log('-- send message to Bot --')
-  // console.log(botPayloadJson)
-  axios({
-    method: 'POST',
-    url: BOT_URL,
-    headers: {
-       Authorization: BOT_AUTH 
-    },
-    data: botPayloadJson
-  }).then(function (response) {
+
+  axios(payGen.doGenerateAxiosRequest('POST', BOT_URL, BOT_AUTH, botPayloadJson)).then(function (response) {
     console.log('Sent to BOT: %s', response.status);
+  }).catch(function(err){
+      goLogging('error', P_SEND_TO_BOT, botPayloadJson.sender, err.response)
   });
 }
 
@@ -472,53 +451,6 @@ function goLogging(status, process, to, message) {
     to: to,
     message: message
   });
-}
-
-function generateBotPayload (generatedUserId, messagePayload) {
-  var additionalPayload = {
-    user_id: generatedUserId,
-    message_id: messagePayload.id,
-    channel: messagePayload.source.type,
-    extra_details: {}
-  }
-  var key = messagePayload.content.type;
-  var content;
-
-  if (messagePayload.content.type == 'text') {
-    content = messagePayload.content.text
-  } else {
-    content = messagePayload.content.mediaUrl
-  }
-
-  return {
-    sender: generatedUserId,
-    to: BOT_TOKEN,
-    [key]: content,
-    type: messagePayload.content.type,
-    payload: additionalPayload
-  }
-}
-
-function generateSmoochPayload (messageContent) {
-  var messagePost = new SunshineConversationsClient.MessagePost();
-  messagePost.author = {
-    type: 'business'
-    // displayName: BOT_ALIAS
-  }
-
-  if (messageContent.type == 'text') {
-    messagePost.content = {
-      type: messageContent.type,
-      text: messageContent
-    }
-  } else {
-    messagePost.content = {
-      type: messageContent.type,
-      [messageContent.type]: messageContent.items.originalContentUrl
-    }
-  }
-
-  return messagePost;
 }
 
 module.exports = router;
