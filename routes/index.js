@@ -18,6 +18,8 @@ var BOT_AUTH = process.env.BOT_AUTH || 'xxx';
 var BOT_PROD_AUTH = process.env.BOT_PROD_AUTH || 'xxx';
 var BOT_TOKEN = process.env.BOT_TOKEN || "xxx";
 
+var BOT_CLIENT = 'JAGO'
+
 var LOG_TOKEN = '';
 
 basicAuth.username = SMOOCH_KEY_ID;
@@ -37,7 +39,7 @@ var { Loggly } = require('winston-loggly-bulk');
 winston.add(new Loggly({
   token: "25cbd41e-e0a1-4289-babf-762a2e6967b6",
   subdomain: "diastowo",
-  tags: ["sw-jago-dev"],
+  tags: ["sw-dev"],
   json: true
 }));
 
@@ -127,7 +129,7 @@ router.post('/conversation/reply', async function (req, res, next) {
   var convId = req.body.userId.split('_')[2];
   var response;
 
-  goLogging('info', P_SEND_TO_SMOOCH, req.body.userId, req.body)
+  goLogging('info', P_SEND_TO_SMOOCH, req.body.userId, req.body, BOT_CLIENT)
   if (userId == undefined || appId == undefined || convId == undefined) {
     res.status(422).send({
       error: 'invalid userId format'
@@ -172,13 +174,13 @@ router.post('/conversation/reply', async function (req, res, next) {
 router.post('/conversation/handover', function (req, res, next) {
   if (req.body.userId.split('_').length < 3) {
 
-    goLogging('error', P_HANDOVER, req.body.userId, req.body)
+    goLogging('error', P_HANDOVER, req.body.userId, req.body, BOT_CLIENT)
 
     res.status(400).send({
       error: 'userId: not registered/wrong pattern'
     })
   } else {
-    goLogging('info', P_HANDOVER, req.body.userId, req.body)
+    goLogging('info', P_HANDOVER, req.body.userId, req.body, BOT_CLIENT)
     let appId = req.body.userId.split('_')[1];
     var convId = req.body.userId.split('_')[2];
     switchboardPassControl(appId, convId);
@@ -194,7 +196,7 @@ function sendToBot(botPayloadJson) {
   axios(payGen.doGenerateAxiosRequest('POST', BOT_URL, BOT_AUTH, botPayloadJson)).then(function (response) {
     console.log('Sent to BOT: %s', response.status);
   }).catch(function(err){
-      goLogging('error', P_SEND_TO_BOT, botPayloadJson.sender, err.response)
+      goLogging('error', P_SEND_TO_BOT, botPayloadJson.sender, err.response, BOT_CLIENT)
   });
 }
 
@@ -422,14 +424,14 @@ function sendCarouseltoSmooch(userId, appId, convId, messagePayload) {
 function finalSendtoSmooch(userId, appId, convId, messagePost) {
 
   if (gotoSmooch) {
-    goLogging('info', P_SEND_TO_SMOOCH, userId + '_' + appId + '_' + convId, messagePost)
+    goLogging('info', P_SEND_TO_SMOOCH, userId + '_' + appId + '_' + convId, messagePost, BOT_CLIENT)
     var apiInstance = new SunshineConversationsClient.MessagesApi();
 
     try {
       return apiInstance.postMessage(appId, convId, messagePost).then(function (data) {
         return data
       }, function (error) {
-        goLogging('error', P_SEND_TO_SMOOCH, userId + '_' + appId + '_' + convId, error.body)
+        goLogging('error', P_SEND_TO_SMOOCH, userId + '_' + appId + '_' + convId, error.body, BOT_CLIENT)
         return {error: error.body};
     });
     } catch (err) {
@@ -437,7 +439,7 @@ function finalSendtoSmooch(userId, appId, convId, messagePost) {
     }
   } else {
     // winston.log('info', messagePost);
-    goLogging('info', P_SEND_TO_SMOOCH, userId + '_' + appId + '_' + convId, messagePost)
+    goLogging('info', P_SEND_TO_SMOOCH, userId + '_' + appId + '_' + convId, messagePost, BOT_CLIENT)
     console.log(JSON.stringify(messagePost))
   }
 }
@@ -455,12 +457,13 @@ function switchboardPassControl(appId, convId) {
   });
 }
 
-function goLogging(status, process, to, message) {
+function goLogging(status, process, to, message, client) {
   winston.log(status, {
     process: process,
     status: status,
     to: to,
-    message: message
+    message: message,
+    client: client
   });
 }
 
