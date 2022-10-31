@@ -122,7 +122,7 @@ router.post('/conversation/test', function(req, res, next) {
   });
 })
 
-router.post('/conversation/reply', async function (req, res, next) {
+router.post('/conversation/reply/', async function (req, res, next) {
   // console.log('HOOK-FROM-KATA userId: ' + req.body.userId);
   console.log(JSON.stringify(req.body));
   let userId = req.body.userId.split('_')[0];
