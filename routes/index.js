@@ -48,15 +48,16 @@ router.get('/testing', function (req, res, next) {
 })
 
 router.get('/checkenv', function (req, res, next) {
-  res.status(200).send({
-    smooch_id: SMOOCH_KEY_ID,
-    smooch_secret: SMOOCH_KEY_SECRET,
-    bot_id: BOT_TOKEN,
-    bot_auth: BOT_AUTH
-  })
+  // res.status(200).send({
+  //   smooch_id: SMOOCH_KEY_ID,
+  //   smooch_secret: SMOOCH_KEY_SECRET,
+  //   bot_id: BOT_TOKEN,
+  //   bot_auth: BOT_AUTH
+  // })
 })
 
 router.get('/webhook', function (req, res, next) {
+  goLogging('info', P_SEND_TO_SMOOCH, 'test-logging', 'test-logging', BOT_CLIENT)
   res.status(200).send({});
 })
 
