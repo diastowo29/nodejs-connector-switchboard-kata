@@ -129,7 +129,7 @@ router.post('/conversation/reply', async function (req, res, next) {
   var convId = req.body.userId.split('_')[2];
   var response;
 
-  console.log(JSON.stringify(req.body))
+  console.log(JSON.stringify(req.body));
 
   goLogging('info', P_SEND_TO_SMOOCH, req.body.userId, req.body, BOT_CLIENT)
   if (userId == undefined || appId == undefined || convId == undefined) {
