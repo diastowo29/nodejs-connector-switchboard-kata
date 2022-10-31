@@ -45,6 +45,15 @@ router.get('/testing', function (req, res, next) {
   res.status(200).send(payGen.doGenerateBotPayload('userid123', payGen.doGenerateSampleMsgPayload('halo')));
 })
 
+// router.get('/checkenv', function (req, res, next) {
+//   res.status(200).send({
+//     smooch_id: SMOOCH_KEY_ID,
+//     smooch_secret: SMOOCH_KEY_SECRET,
+//     bot_id: BOT_TOKEN,
+//     bot_auth: BOT_AUTH
+//   })
+// })
+
 router.get('/webhook', function (req, res, next) {
   res.status(200).send({});
 })
@@ -98,7 +107,7 @@ router.post('/conversation/test', function(req, res, next) {
   var chatContent = req.body.text;
   var userId = '5613c341a4da96f98cb3f3a2_6225cb52ebe30d00ef9a2e9a_9be4eb9330540f041f42e755'
   var botResponse;
-  var jsonPayload = payGen.doGenerateBotPayload(userId, payGen.doGenerateSampleMsgPayload('halo'));
+  var jsonPayload = payGen.doGenerateBotPayload(userId, payGen.doGenerateSampleMsgPayload(chatContent));
 
   axios(payGen.doGenerateAxiosRequest('POST', BOT_URL, BOT_AUTH, jsonPayload)).then(function (response) {
     console.log('Sent to BOT: %s', response.status);
