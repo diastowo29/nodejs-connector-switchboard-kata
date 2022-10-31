@@ -37,7 +37,7 @@ var { Loggly } = require('winston-loggly-bulk');
 winston.add(new Loggly({
   token: "25cbd41e-e0a1-4289-babf-762a2e6967b6",
   subdomain: "diastowo",
-  tags: ["sw-dev"],
+  tags: ["sw-jago-dev"],
   json: true
 }));
 
