@@ -114,7 +114,7 @@ router.post('/conversation/test', function(req, res, next) {
     botResponse = response;
     res.status(200).send({ response: botResponse });
   }).catch(function(err){
-    res.status(err.response.status).send({error: err.response.statusText, payload: jsonPayload})
+    res.status(400).send({error: err, payload: jsonPayload})
   });
 })
 
