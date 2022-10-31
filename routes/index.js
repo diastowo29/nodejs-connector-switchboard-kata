@@ -45,14 +45,14 @@ router.get('/testing', function (req, res, next) {
   res.status(200).send(payGen.doGenerateBotPayload('userid123', payGen.doGenerateSampleMsgPayload('halo')));
 })
 
-// router.get('/checkenv', function (req, res, next) {
-//   res.status(200).send({
-//     smooch_id: SMOOCH_KEY_ID,
-//     smooch_secret: SMOOCH_KEY_SECRET,
-//     bot_id: BOT_TOKEN,
-//     bot_auth: BOT_AUTH
-//   })
-// })
+router.get('/checkenv', function (req, res, next) {
+  res.status(200).send({
+    smooch_id: SMOOCH_KEY_ID,
+    smooch_secret: SMOOCH_KEY_SECRET,
+    bot_id: BOT_TOKEN,
+    bot_auth: BOT_AUTH
+  })
+})
 
 router.get('/webhook', function (req, res, next) {
   res.status(200).send({});
@@ -111,9 +111,11 @@ router.post('/conversation/test', function(req, res, next) {
 
   axios(payGen.doGenerateAxiosRequest('POST', BOT_URL, BOT_AUTH, jsonPayload)).then(function (response) {
     console.log('Sent to BOT: %s', response.status);
-    botResponse = response;
-    res.status(200).send({ response: botResponse });
+    // console.log(response)
+    botResponse = response.data;
+    res.status(200).send({ response: botResponse, payload: jsonPayload });
   }).catch(function(err){
+    console.log(err)
     res.status(400).send({error: err, payload: jsonPayload})
   });
 })
