@@ -124,12 +124,12 @@ router.post('/conversation/test', function(req, res, next) {
 
 router.post('/conversation/reply', async function (req, res, next) {
   // console.log('HOOK-FROM-KATA userId: ' + req.body.userId);
+  console.log(JSON.stringify(req.body));
   let userId = req.body.userId.split('_')[0];
   let appId = req.body.userId.split('_')[1];
   var convId = req.body.userId.split('_')[2];
   var response;
 
-  console.log(JSON.stringify(req.body));
 
   goLogging('info', P_SEND_TO_SMOOCH, req.body.userId, req.body, BOT_CLIENT)
   if (userId == undefined || appId == undefined || convId == undefined) {
