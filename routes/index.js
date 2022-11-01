@@ -81,7 +81,7 @@ router.post('/webhook', function (req, res, next) {
           if (convSwitchboardName == 'bot') {
             if (BYPASS_ZD == 'true') {
               console.log('=== Inbound Chat from:  ' + displayName + ', Pass Control to Zendesk ===')
-              switchboardPassControl(appId, convId);
+              switchboardPassControl(appId, convId, false, null);
             } else {
               if (event.payload.message.author.type == "user") {
                 var messagePayload = event.payload.message;
@@ -96,7 +96,7 @@ router.post('/webhook', function (req, res, next) {
           if (convSwitchboardName == 'bot') {
             if (convChannel != 'officehours') { // 'officehours' means automated messages
               console.log('-- unregistered account, pass to zd imidiately -- ')
-              switchboardPassControl(appId, convId);
+              switchboardPassControl(appId, convId, false, null);
             }
           }
         }
@@ -176,6 +176,7 @@ router.post('/conversation/reply/', async function (req, res, next) {
 });
 
 router.post('/conversation/handover', function (req, res, next) {
+  var solvedByBot = false;
   if (req.body.userId.split('_').length < 3) {
 
     goLogging('error', P_HANDOVER, req.body.userId, req.body, BOT_CLIENT)
@@ -184,10 +185,11 @@ router.post('/conversation/handover', function (req, res, next) {
       error: 'userId: not registered/wrong pattern'
     })
   } else {
+    solvedByBot = req.body.solved_by_bot;
     goLogging('info', P_HANDOVER, req.body.userId, req.body, BOT_CLIENT)
     let appId = req.body.userId.split('_')[1];
     var convId = req.body.userId.split('_')[2];
-    switchboardPassControl(appId, convId);
+    switchboardPassControl(appId, convId, solvedByBot, first_message_id);
     res.status(200).send({
       status: 'ok'
     })
@@ -448,10 +450,18 @@ function finalSendtoSmooch(userId, appId, convId, messagePost) {
   }
 }
 
-function switchboardPassControl(appId, convId) {
+function switchboardPassControl(appId, convId, solved, firstMsgId) {
+  var solvedTag;
+
+  if (solved) {
+    solvedTag = 'solved';
+  } else {
+    solvedTag = 'unsolved';
+  }
   var apiInstance = new SunshineConversationsClient.SwitchboardActionsApi();
   var passControlBody = new SunshineConversationsClient.PassControlBody();
   passControlBody.switchboardIntegration = 'next';
+  passControlBody.metadata['dataCapture.systemField.tags'] = solvedTag;
 
   console.log('passing control chat')
   apiInstance.passControl(appId, convId, passControlBody).then(function (data) {
