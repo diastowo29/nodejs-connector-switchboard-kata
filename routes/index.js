@@ -179,14 +179,14 @@ router.post('/conversation/handover', function (req, res, next) {
   var solvedByBot = false;
   if (req.body.userId.split('_').length < 3) {
 
-    goLogging('error', P_HANDOVER, req.body.userId, req.body, BOT_CLIENT)
+    // goLogging('error', P_HANDOVER, req.body.userId, req.body, BOT_CLIENT)
 
     res.status(400).send({
       error: 'userId: not registered/wrong pattern'
     })
   } else {
     solvedByBot = req.body.solved_by_bot;
-    goLogging('info', P_HANDOVER, req.body.userId, req.body, BOT_CLIENT)
+    // goLogging('info', P_HANDOVER, req.body.userId, req.body, BOT_CLIENT)
     let appId = req.body.userId.split('_')[1];
     var convId = req.body.userId.split('_')[2];
     switchboardPassControl(appId, convId, solvedByBot, req.body.first_message_id);
@@ -451,7 +451,7 @@ function finalSendtoSmooch(userId, appId, convId, messagePost) {
 }
 
 function switchboardPassControl(appId, convId, solved, firstMsgId) {
-  var solvedTag;
+  var solvedTag = '';
 
   if (solved) {
     solvedTag = 'solved';
@@ -461,7 +461,7 @@ function switchboardPassControl(appId, convId, solved, firstMsgId) {
   var apiInstance = new SunshineConversationsClient.SwitchboardActionsApi();
   var passControlBody = new SunshineConversationsClient.PassControlBody();
   passControlBody.switchboardIntegration = 'next';
-  passControlBody.metadata['dataCapture.systemField.tags'] = solvedTag;
+  // passControlBody.metadata['dataCapture.systemField.tags'] = solvedTag;
 
   console.log('passing control chat')
   apiInstance.passControl(appId, convId, passControlBody).then(function (data) {
