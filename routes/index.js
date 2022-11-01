@@ -462,8 +462,12 @@ function switchboardPassControl(appId, convId, solved, firstMsgId) {
   var passControlBody = new SunshineConversationsClient.PassControlBody();
   passControlBody.switchboardIntegration = 'next';
   // passControlBody.metadata['dataCapture.systemField.tags'] = solvedTag;
+  passControlBody.metadata = {
+    ['dataCapture.systemField.tags']: solvedTag
+  }
 
   console.log('passing control chat')
+  // console.log(passControlBody)
   apiInstance.passControl(appId, convId, passControlBody).then(function (data) {
     console.log('API Pass Control called successfully. Returned data: ' + data);
   }, function (error) {
