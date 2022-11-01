@@ -189,7 +189,7 @@ router.post('/conversation/handover', function (req, res, next) {
     goLogging('info', P_HANDOVER, req.body.userId, req.body, BOT_CLIENT)
     let appId = req.body.userId.split('_')[1];
     var convId = req.body.userId.split('_')[2];
-    switchboardPassControl(appId, convId, solvedByBot, first_message_id);
+    switchboardPassControl(appId, convId, solvedByBot, req.body.first_message_id);
     res.status(200).send({
       status: 'ok'
     })
