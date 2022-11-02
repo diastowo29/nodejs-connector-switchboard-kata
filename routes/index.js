@@ -4,6 +4,7 @@ var SunshineConversationsClient = require('sunshine-conversations-client');
 var defaultClient = SunshineConversationsClient.ApiClient.instance;
 const axios = require('axios');
 const payGen = require("./config/payload.js")
+const axiosRetry = require('axios-retry');
 
 // const { chatlog_model } = require('../sequelize')
 
@@ -43,8 +44,19 @@ winston.add(new Loggly({
   json: true
 }));
 
+axiosRetry(axios, {
+  retries: 3,
+  retryCondition: (e) => {
+    return (
+      axiosRetry.isNetworkOrIdempotentRequestError(e) ||
+      e.response.status != 200
+    );
+  }
+})
+
 router.get('/testing', function (req, res, next) {
-  res.status(200).send(payGen.doGenerateBotPayload('userid123', payGen.doGenerateSampleMsgPayload('halo')));
+  // res.status(200).send(payGen.doGenerateBotPayload('userid123', payGen.doGenerateSampleMsgPayload('halo')));
+  res.status(200).send({});
 })
 
 router.get('/checkenv', function (req, res, next) {
@@ -202,7 +214,7 @@ function sendToBot(botPayloadJson) {
   axios(payGen.doGenerateAxiosRequest('POST', BOT_URL, BOT_AUTH, botPayloadJson)).then(function (response) {
     console.log('Sent to BOT: %s', response.status);
   }).catch(function(err){
-      goLogging('error', P_SEND_TO_BOT, botPayloadJson.sender, err.response, BOT_CLIENT)
+    goLogging('error', P_SEND_TO_BOT, botPayloadJson.sender, err.response, BOT_CLIENT)
   });
 }
 
@@ -451,23 +463,17 @@ function finalSendtoSmooch(userId, appId, convId, messagePost) {
 }
 
 function switchboardPassControl(appId, convId, solved, firstMsgId) {
-  var solvedTag = '';
+  var solvedTag = (solved) ? 'solved' : 'unsolved';
 
-  if (solved) {
-    solvedTag = 'solved';
-  } else {
-    solvedTag = 'unsolved';
-  }
   var apiInstance = new SunshineConversationsClient.SwitchboardActionsApi();
   var passControlBody = new SunshineConversationsClient.PassControlBody();
   passControlBody.switchboardIntegration = 'next';
-  // passControlBody.metadata['dataCapture.systemField.tags'] = solvedTag;
   passControlBody.metadata = {
     ['dataCapture.systemField.tags']: solvedTag
   }
 
   console.log('passing control chat')
-  // console.log(passControlBody)
+  
   apiInstance.passControl(appId, convId, passControlBody).then(function (data) {
     console.log('API Pass Control called successfully. Returned data: ' + data);
   }, function (error) {
