@@ -84,7 +84,7 @@ router.post('/webhook', function (req, res, next) {
       var convId = event.payload.conversation.id;
       
       // console.log(JSON.stringify(generateBotPayload('useridtesting', event.payload.message)))
-
+      // taro custom payload untuk tambah tipe user (premium bot a, non bot b)
       if ('activeSwitchboardIntegration' in event.payload.conversation) {
         var convSwitchboardName = event.payload.conversation.activeSwitchboardIntegration.name;
         console.log('inbound: ' + event.payload.message.author.displayName + ' switchboard: ' + event.payload.conversation.activeSwitchboardIntegration.name)
@@ -469,7 +469,8 @@ function switchboardPassControl(appId, convId, solved, firstMsgId) {
   var passControlBody = new SunshineConversationsClient.PassControlBody();
   passControlBody.switchboardIntegration = 'next';
   passControlBody.metadata = {
-    ['dataCapture.systemField.tags']: solvedTag
+    ['dataCapture.systemField.tags']: solvedTag,
+    ['dataCapture.systemField.requester.external_id']: 'cek'
   }
 
   console.log('passing control chat')
