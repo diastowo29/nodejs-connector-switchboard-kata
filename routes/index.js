@@ -474,7 +474,7 @@ function switchboardPassControl(appId, convId, solved, firstMsgId) {
     ['dataCapture.ticketField.10051072301335']: convId,
     ['dataCapture.ticketField.4697265932823']: 'transfer',
     ['first_message_id']: firstMsgId,
-    ['dataCapture.userField.reff_user_id']: 'tes123'
+    ['dataCapture.userField.360001452653']: 'tes123'
   }
 
   console.log('passing control chat')
