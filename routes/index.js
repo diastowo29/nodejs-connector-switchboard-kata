@@ -470,8 +470,9 @@ function switchboardPassControl(appId, convId, solved, firstMsgId) {
   var passControlBody = new SunshineConversationsClient.PassControlBody();
   passControlBody.switchboardIntegration = 'next';
   passControlBody.metadata = {
-    ['dataCapture.systemField.tags']: [solvedTag, 'transfer'],
+    ['dataCapture.systemField.tags']: solvedTag,
     ['dataCapture.ticketField.10051072301335']: convId,
+    ['dataCapture.ticketField.4697265932823']: 'transfer',
     ['first_message_id']: firstMsgId,
     ['dataCapture.userField.reff_user_id']: 'tes123'
   }
