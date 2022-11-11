@@ -470,10 +470,10 @@ function switchboardPassControl(appId, convId, solved, firstMsgId) {
   var passControlBody = new SunshineConversationsClient.PassControlBody();
   passControlBody.switchboardIntegration = 'next';
   passControlBody.metadata = {
-    ['dataCapture.systemField.tags']: solvedTag,
+    ['dataCapture.systemField.tags']: [solvedTag, 'transfer'],
     ['dataCapture.ticketField.10051072301335']: convId,
     ['first_message_id']: firstMsgId,
-    ['dataCapture.userField.external_id']: 'tes1'
+    ['dataCapture.userField.reff_user_id']: 'tes123'
   }
 
   console.log('passing control chat')
