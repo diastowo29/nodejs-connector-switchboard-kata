@@ -472,9 +472,9 @@ function switchboardPassControl(appId, convId, solved, firstMsgId) {
   passControlBody.metadata = {
     ['dataCapture.systemField.tags']: solvedTag,
     ['dataCapture.ticketField.10051072301335']: convId,
-    ['dataCapture.ticketField.5140345918487']: '_cs_bibit',
+    ['dataCapture.ticketField.5140345918487']: "_cs_bibit",
     ['first_message_id']: firstMsgId,
-    ['dataCapture.userField.360001452653']: 'tes123'
+    ['dataCapture.userField.360001452653']: "tes123"
   }
 
   console.log('passing control chat')
