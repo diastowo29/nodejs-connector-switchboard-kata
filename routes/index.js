@@ -199,6 +199,7 @@ router.post('/conversation/handover', function (req, res, next) {
   } else {
     solvedByBot = req.body.solved_by_bot;
     goLogging('info', P_HANDOVER, req.body.userId, req.body, BOT_CLIENT)
+    console.log('info', P_HANDOVER, req.body.userId, req.body, BOT_CLIENT)
     let userId = req.body.userId.split('_')[0];
     let appId = req.body.userId.split('_')[1];
     var convId = req.body.userId.split('_')[2];
