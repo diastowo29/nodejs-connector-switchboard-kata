@@ -473,6 +473,7 @@ function switchboardPassControl(appId, convId, solved, firstMsgId) {
     ['dataCapture.systemField.tags']: solvedTag,
     ['dataCapture.ticketField.10051072301335']: convId,
     ['dataCapture.ticketField.360048058393']: "tes",
+    ['dataCapture.userField.360001452653']: 123455,
     ['first_message_id']: firstMsgId,
   }
 
