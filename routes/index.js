@@ -474,7 +474,7 @@ function switchboardPassControl(appId, convId, solved, firstMsgId, userId = null
   passControlBody.metadata = {
     ['dataCapture.systemField.tags']: solvedTag,
     ['dataCapture.ticketField.10051072301335']: convId,
-    ['dataCapture.ticketField.10208376608151']: userId,
+    ['dataCapture.ticketField.10209017032855']: userId,
     ['first_message_id']: firstMsgId,
   }
 
