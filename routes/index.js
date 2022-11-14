@@ -198,12 +198,12 @@ router.post('/conversation/handover', function (req, res, next) {
     })
   } else {
     solvedByBot = req.body.solved_by_bot;
-    // goLogging('info', P_HANDOVER, req.body.userId, req.body, BOT_CLIENT)
+    goLogging('info', P_HANDOVER, req.body.userId, req.body, BOT_CLIENT)
     let userId = req.body.userId.split('_')[0];
     let appId = req.body.userId.split('_')[1];
     var convId = req.body.userId.split('_')[2];
     switchboardPassControl(appId, convId, solvedByBot, req.body.first_message_id, userId);
-    res.status(200).send({
+    res.status(200).send({  
       status: 'ok'
     })
   }
