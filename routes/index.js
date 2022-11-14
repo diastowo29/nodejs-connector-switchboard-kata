@@ -90,7 +90,7 @@ router.post('/webhook', function (req, res, next) {
         console.log('inbound: ' + event.payload.message.author.displayName + ' switchboard: ' + event.payload.conversation.activeSwitchboardIntegration.name)
         if (CHANNEL_ACTIVE_ACCOUNT.includes(convIntegrationId)) {
           var displayName = event.payload.message.author.displayName;
-          if (convSwitchboardName == 'bot' && ) {
+          if (convSwitchboardName == 'bot') {
             if (BYPASS_ZD == 'true' ) {
               console.log('=== Inbound Chat from:  ' + displayName + ', Pass Control to Zendesk ===')
               switchboardPassControl(appId, convId, false, null);
