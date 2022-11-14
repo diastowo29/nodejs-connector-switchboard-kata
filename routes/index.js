@@ -472,7 +472,7 @@ function switchboardPassControl(appId, convId, solved, firstMsgId) {
   passControlBody.metadata = {
     ['dataCapture.systemField.tags']: solvedTag,
     ['dataCapture.ticketField.10051072301335']: convId,
-    ['dataCapture.ticketField.360048058393']: "tes",
+    ['dataCapture.ticketField.360048058393']: "testambahan",
     ['dataCapture.userField.360001452653']: "123455",
     ['dataCapture.userField.tags']: "premium",
     ['dataCapture.userField.reff_user_id']: "543",
