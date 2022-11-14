@@ -90,8 +90,8 @@ router.post('/webhook', function (req, res, next) {
         console.log('inbound: ' + event.payload.message.author.displayName + ' switchboard: ' + event.payload.conversation.activeSwitchboardIntegration.name)
         if (CHANNEL_ACTIVE_ACCOUNT.includes(convIntegrationId)) {
           var displayName = event.payload.message.author.displayName;
-          if (convSwitchboardName == 'bot') {
-            if (BYPASS_ZD == 'true') {
+          if (convSwitchboardName == 'bot' && ) {
+            if (BYPASS_ZD == 'true' ) {
               console.log('=== Inbound Chat from:  ' + displayName + ', Pass Control to Zendesk ===')
               switchboardPassControl(appId, convId, false, null);
             } else {
@@ -472,10 +472,7 @@ function switchboardPassControl(appId, convId, solved, firstMsgId) {
   passControlBody.metadata = {
     ['dataCapture.systemField.tags']: solvedTag,
     ['dataCapture.ticketField.10051072301335']: convId,
-    ['dataCapture.ticketField.360048058393']: "testambahan",
-    ['dataCapture.userField.360001452653']: "123455",
-    ['dataCapture.userField.tags']: "premium",
-    ['dataCapture.userField.reff_user_id']: "543",
+    ['dataCapture.ticketField.10208376608151']: 123456,
     ['first_message_id']: firstMsgId,
   }
 
