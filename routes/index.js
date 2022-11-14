@@ -93,7 +93,7 @@ router.post('/webhook', function (req, res, next) {
           if (convSwitchboardName == 'bot') {
             if (BYPASS_ZD == 'true' ) {
               console.log('=== Inbound Chat from:  ' + displayName + ', Pass Control to Zendesk ===')
-              switchboardPassControl(appId, convId, false, null);
+              switchboardPassControl(appId, convId, false, null, event.payload.message.author.userId);
             } else {
               if (event.payload.message.author.type == "user") {
                 var messagePayload = event.payload.message;
@@ -463,7 +463,7 @@ function finalSendtoSmooch(userId, appId, convId, messagePost) {
   }
 }
 
-function switchboardPassControl(appId, convId, solved, firstMsgId) {
+function switchboardPassControl(appId, convId, solved, firstMsgId, userId = null) {
   var solvedTag = (solved) ? 'solved_by_bot' : 'unsolved';
 
   var apiInstance = new SunshineConversationsClient.SwitchboardActionsApi();
@@ -472,7 +472,7 @@ function switchboardPassControl(appId, convId, solved, firstMsgId) {
   passControlBody.metadata = {
     ['dataCapture.systemField.tags']: solvedTag,
     ['dataCapture.ticketField.10051072301335']: convId,
-    ['dataCapture.ticketField.10208376608151']: 123456,
+    ['dataCapture.ticketField.10208376608151']: userId,
     ['first_message_id']: firstMsgId,
   }
 
