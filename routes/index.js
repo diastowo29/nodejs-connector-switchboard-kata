@@ -146,6 +146,7 @@ router.post('/conversation/reply/', async function (req, res, next) {
 
 
   goLogging('info', P_SEND_TO_SMOOCH, req.body.userId, req.body, BOT_CLIENT)
+  console.log('info', P_SEND_TO_SMOOCH, req.body.userId, req.body, BOT_CLIENT)
   if (userId == undefined || appId == undefined || convId == undefined) {
     res.status(422).send({
       error: 'invalid userId format'
