@@ -100,6 +100,7 @@ router.post('/webhook', function (req, res, next) {
                 var userIdForBot = messagePayload.author.userId + '_' + appId + '_' + convId;
                 // console.log((req.headers))
                 console.log('=== Inbound Chat from:  ' + displayName + ', Pass to Bot ===')
+                console.log(messagePayload)
                 sendToBot(payGen.doGenerateBotPayload(userIdForBot, messagePayload))
               }
             }
