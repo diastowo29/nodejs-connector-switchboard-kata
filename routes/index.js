@@ -482,10 +482,10 @@ function switchboardPassControl(appId, convId, solved, firstMsgId, userId = null
   }
 
   Object.entries(ticket_fields).map(f => {
-    passControlBody.metadata[`dataCapture.ticketField.${f[0]}`] = f[1]
+    passControlBody.metadata[[`dataCapture.ticketField.${f[0]}`]] = f[1]
   })
 
-  console.log('passing control chat')
+  console.log('passing control chat', passControlBody)
   
   apiInstance.passControl(appId, convId, passControlBody).then(function (data) {
     console.log('API Pass Control called successfully. Returned data: ' + data);
