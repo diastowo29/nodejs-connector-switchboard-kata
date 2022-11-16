@@ -191,7 +191,7 @@ router.post('/conversation/reply/', async function (req, res, next) {
 
 router.post('/conversation/handover', function (req, res, next) {
   var solvedByBot = false;
-  var ticketFields = req.body.ticket_fields;
+  var ticket_fields = req.body.ticket_fields;
   if (req.body.userId.split('_').length < 3) {
 
     // goLogging('error', P_HANDOVER, req.body.userId, req.body, BOT_CLIENT)
