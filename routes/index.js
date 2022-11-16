@@ -191,6 +191,7 @@ router.post('/conversation/reply/', async function (req, res, next) {
 
 router.post('/conversation/handover', function (req, res, next) {
   var solvedByBot = false;
+  var ticketFields = req.body.ticketFields;
   if (req.body.userId.split('_').length < 3) {
 
     // goLogging('error', P_HANDOVER, req.body.userId, req.body, BOT_CLIENT)
@@ -205,7 +206,7 @@ router.post('/conversation/handover', function (req, res, next) {
     let userId = req.body.userId.split('_')[0];
     let appId = req.body.userId.split('_')[1];
     var convId = req.body.userId.split('_')[2];
-    switchboardPassControl(appId, convId, solvedByBot, req.body.first_message_id, userId);
+    switchboardPassControl(appId, convId, solvedByBot, req.body.first_message_id, userId, ticketFields);
     res.status(200).send({  
       status: 'ok'
     })
@@ -467,7 +468,7 @@ function finalSendtoSmooch(userId, appId, convId, messagePost) {
   }
 }
 
-function switchboardPassControl(appId, convId, solved, firstMsgId, userId = null) {
+function switchboardPassControl(appId, convId, solved, firstMsgId, userId = null, ticketFields) {
   var solvedTag = (solved) ? 'solved_by_bot' : 'unsolved';
 
   var apiInstance = new SunshineConversationsClient.SwitchboardActionsApi();
@@ -479,6 +480,10 @@ function switchboardPassControl(appId, convId, solved, firstMsgId, userId = null
     ['dataCapture.ticketField.10209017032855']: userId,
     ['first_message_id']: firstMsgId,
   }
+
+  Object.entries(ticketFields).map(f => {
+    passControlBody.metadata[`dataCapture.ticketField.${f[0]}`] = f[1]
+  })
 
   console.log('passing control chat')
   
