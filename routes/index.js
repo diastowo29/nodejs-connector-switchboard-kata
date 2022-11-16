@@ -477,13 +477,13 @@ function switchboardPassControl(appId, convId, solved, firstMsgId, userId = null
   passControlBody.metadata = {
     ['dataCapture.systemField.tags']: solvedTag,
     ['dataCapture.ticketField.10051072301335']: convId,
-    ['dataCapture.ticketField.10209017032855']: userId,
-    ['first_message_id']: firstMsgId,
+    ['dataCapture.ticketField.10209017032855']: userId
   }
 
   Object.entries(ticket_fields).map(f => {
     passControlBody.metadata[[`dataCapture.ticketField.${f[0]}`]] = f[1]
   })
+  passControlBody.metadata[['first_message_id']] = firstMsgId
 
   console.log('passing control chat', passControlBody)
   
