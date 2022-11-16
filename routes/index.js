@@ -478,8 +478,8 @@ function switchboardPassControl(appId, convId, solved, firstMsgId, userId = null
     ['dataCapture.systemField.tags']: solvedTag,
     ['dataCapture.ticketField.10051072301335']: convId,
     ['dataCapture.ticketField.10209017032855']: userId,
-    ['dataCapture.ticketField.5140407603223']: 'outstanding_bot',
-    ['dataCapture.ticketField.5140324242711']: 'whatsapp',
+    ['dataCapture.ticketField.5140407603223']: '5140883572247',
+    ['dataCapture.ticketField.5140324242711']: '5140324242327',
   }
 
   // Object.entries(ticket_fields).map(f => {
