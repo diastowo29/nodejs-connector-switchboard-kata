@@ -91,15 +91,16 @@ router.post('/webhook', function (req, res, next) {
         if (CHANNEL_ACTIVE_ACCOUNT.includes(convIntegrationId)) {
           var displayName = event.payload.message.author.displayName;
           if (convSwitchboardName == 'bot') {
-            if (BYPASS_ZD == 'true') {
+            if (BYPASS_ZD == 'true' ) {
               console.log('=== Inbound Chat from:  ' + displayName + ', Pass Control to Zendesk ===')
-              switchboardPassControl(appId, convId, false, null);
+              switchboardPassControl(appId, convId, false, null, event.payload.message.author.userId);
             } else {
               if (event.payload.message.author.type == "user") {
                 var messagePayload = event.payload.message;
                 var userIdForBot = messagePayload.author.userId + '_' + appId + '_' + convId;
                 // console.log((req.headers))
                 console.log('=== Inbound Chat from:  ' + displayName + ', Pass to Bot ===')
+                console.log(messagePayload)
                 sendToBot(payGen.doGenerateBotPayload(userIdForBot, messagePayload))
               }
             }
@@ -146,6 +147,7 @@ router.post('/conversation/reply/', async function (req, res, next) {
 
 
   goLogging('info', P_SEND_TO_SMOOCH, req.body.userId, req.body, BOT_CLIENT)
+  console.log('info', P_SEND_TO_SMOOCH, req.body.userId, req.body, BOT_CLIENT)
   if (userId == undefined || appId == undefined || convId == undefined) {
     res.status(422).send({
       error: 'invalid userId format'
@@ -189,6 +191,7 @@ router.post('/conversation/reply/', async function (req, res, next) {
 
 router.post('/conversation/handover', function (req, res, next) {
   var solvedByBot = false;
+  var ticket_fields = req.body.ticket_fields;
   if (req.body.userId.split('_').length < 3) {
 
     // goLogging('error', P_HANDOVER, req.body.userId, req.body, BOT_CLIENT)
@@ -198,11 +201,13 @@ router.post('/conversation/handover', function (req, res, next) {
     })
   } else {
     solvedByBot = req.body.solved_by_bot;
-    // goLogging('info', P_HANDOVER, req.body.userId, req.body, BOT_CLIENT)
+    goLogging('info', P_HANDOVER, req.body.userId, req.body, BOT_CLIENT)
+    console.log('info', P_HANDOVER, req.body.userId, req.body, BOT_CLIENT)
+    let userId = req.body.userId.split('_')[0];
     let appId = req.body.userId.split('_')[1];
     var convId = req.body.userId.split('_')[2];
-    switchboardPassControl(appId, convId, solvedByBot, req.body.first_message_id);
-    res.status(200).send({
+    switchboardPassControl(appId, convId, solvedByBot, req.body.first_message_id, userId, ticket_fields);
+    res.status(200).send({  
       status: 'ok'
     })
   }
@@ -476,7 +481,12 @@ function switchboardPassControl(appId, convId, solved, firstMsgId) {
     ['dataCapture.userField.external_id']: 'tes1'
   }
 
-  console.log('passing control chat')
+  Object.entries(ticket_fields).map(f => {
+    passControlBody.metadata[[`dataCapture.ticketField.${f[0]}`]] = f[1] ?? 0
+  })
+  passControlBody.metadata[['first_message_id']] = firstMsgId
+
+  console.log('passing control chat', passControlBody)
   
   apiInstance.passControl(appId, convId, passControlBody).then(function (data) {
     console.log('API Pass Control called successfully. Returned data: ' + data);
