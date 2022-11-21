@@ -471,7 +471,7 @@ function switchboardPassControl(appId, convId, solved, firstMsgId) {
   passControlBody.switchboardIntegration = 'next';
   passControlBody.metadata = {
     ['dataCapture.systemField.tags']: solvedTag,
-    ['dataCapture.ticketField.10051072301335']: convId,
+    ['dataCapture.ticketField.10051072301335']: convId, //STILL HARDCODED
     ['first_message_id']: firstMsgId
   }
 
