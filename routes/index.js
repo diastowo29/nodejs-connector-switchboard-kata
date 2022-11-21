@@ -214,6 +214,7 @@ function sendToBot(botPayloadJson) {
   axios(payGen.doGenerateAxiosRequest('POST', BOT_URL, BOT_AUTH, botPayloadJson)).then(function (response) {
     console.log('Sent to BOT: %s', response.status);
   }).catch(function(err){
+    switchboardPassControl(botPayloadJson.sender.split('_')[1], botPayloadJson.sender.split('_')[2], convId, false, null)
     goLogging('error', P_SEND_TO_BOT, botPayloadJson.sender, err.response, BOT_CLIENT)
   });
 }
@@ -463,14 +464,16 @@ function finalSendtoSmooch(userId, appId, convId, messagePost) {
 }
 
 function switchboardPassControl(appId, convId, solved, firstMsgId) {
-  var solvedTag = (solved) ? 'solved' : 'unsolved';
+  var solvedTag = (solved) ? 'solved_by_bot' : 'unsolved';
 
   var apiInstance = new SunshineConversationsClient.SwitchboardActionsApi();
   var passControlBody = new SunshineConversationsClient.PassControlBody();
   passControlBody.switchboardIntegration = 'next';
   passControlBody.metadata = {
     ['dataCapture.systemField.tags']: solvedTag,
-    ['dataCapture.systemField.requester.external_id']: 'cek'
+    ['dataCapture.ticketField.10051072301335']: convId,
+    ['first_message_id']: firstMsgId,
+    ['dataCapture.userField.external_id']: 'tes1'
   }
 
   console.log('passing control chat')
