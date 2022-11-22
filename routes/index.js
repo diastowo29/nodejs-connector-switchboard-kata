@@ -76,8 +76,6 @@ router.get('/webhook', function (req, res, next) {
 
 router.post('/webhook', function (req, res, next) {
   var appId = req.body.app.id;
-  // console.log(JSON.stringify(req.body))
-  // console.log('BOT ALIAS: ' + BOT_ALIAS + ' | BYPASS ZD: ' + BYPASS_ZD)
   req.body.events.forEach(event => {
     if (event.type != 'conversation:read') {
       var convChannel = event.payload.message.source.type;
@@ -88,18 +86,14 @@ router.post('/webhook', function (req, res, next) {
         var convSwitchboardName = event.payload.conversation.activeSwitchboardIntegration.name;
         if (CHANNEL_ACTIVE_ACCOUNT.includes(convIntegrationId)) {
           console.log(`Inbound SMOOCH User: ${event.payload.message.author.displayName} SW: ${convSwitchboardName} USER_ID: ${event.payload.message.author.userId}_${appId}_${convId}`)
-          var displayName = event.payload.message.author.displayName;
+          // var displayName = event.payload.message.author.displayName;
           if (convSwitchboardName == 'bot') {
             if (BYPASS_ZD == 'true' ) {
-              // console.log('=== Inbound Chat from:  ' + displayName + ', Pass Control to Zendesk ===')
               switchboardPassControl(appId, convId, false, null, event.payload.message.author.userId);
             } else {
               if (event.payload.message.author.type == "user") {
                 var messagePayload = event.payload.message;
                 var userIdForBot = messagePayload.author.userId + '_' + appId + '_' + convId;
-                // console.log((req.headers))
-                // console.log('=== Inbound Chat from:  ' + displayName + ', Pass to Bot ===')
-                // console.log(messagePayload)
                 sendToBot(payGen.doGenerateBotPayload(userIdForBot, messagePayload))
               }
             }
@@ -108,7 +102,7 @@ router.post('/webhook', function (req, res, next) {
           if (convSwitchboardName == 'bot') {
             if (convChannel != 'officehours') { // 'officehours' means automated messages
               console.log('-- unregistered account, pass to zd imidiately -- ')
-              switchboardPassControl(appId, convId, false, null);
+              switchboardPassControl(appId, convId, false, null, event.payload.message.author.userId);
             }
           }
         }
@@ -198,7 +192,8 @@ router.post('/conversation/handover', function (req, res, next) {
   } else {
     solvedByBot = req.body.solved_by_bot;
     goLogging('info', P_HANDOVER, req.body.userId, req.body, BOT_CLIENT)
-    console.log('info', P_HANDOVER, req.body.userId, req.body, BOT_CLIENT)
+    // console.log('info', P_HANDOVER, req.body.userId, req.body, BOT_CLIENT)
+    console.log(`Handover USER_ID: ${req.body.userId}`)
     let userId = req.body.userId.split('_')[0];
     let appId = req.body.userId.split('_')[1];
     var convId = req.body.userId.split('_')[2];
