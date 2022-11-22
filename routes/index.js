@@ -82,25 +82,23 @@ router.post('/webhook', function (req, res, next) {
       var convChannel = event.payload.message.source.type;
       var convIntegrationId = event.payload.message.source.integrationId;
       var convId = event.payload.conversation.id;
-      
-      // console.log(JSON.stringify(generateBotPayload('useridtesting', event.payload.message)))
       // taro custom payload untuk tambah tipe user (premium bot a, non bot b)
       if ('activeSwitchboardIntegration' in event.payload.conversation) {
         var convSwitchboardName = event.payload.conversation.activeSwitchboardIntegration.name;
-        console.log('inbound: ' + event.payload.message.author.displayName + ' switchboard: ' + event.payload.conversation.activeSwitchboardIntegration.name)
+        console.log(`Inbound SMOOCH User: ${event.payload.message.author.displayName} SW: ${convSwitchboardName} USER_ID: ${event.payload.message.author.userId}_${appId}_${convId}`)
         if (CHANNEL_ACTIVE_ACCOUNT.includes(convIntegrationId)) {
           var displayName = event.payload.message.author.displayName;
           if (convSwitchboardName == 'bot') {
             if (BYPASS_ZD == 'true' ) {
-              console.log('=== Inbound Chat from:  ' + displayName + ', Pass Control to Zendesk ===')
+              // console.log('=== Inbound Chat from:  ' + displayName + ', Pass Control to Zendesk ===')
               switchboardPassControl(appId, convId, false, null, event.payload.message.author.userId);
             } else {
               if (event.payload.message.author.type == "user") {
                 var messagePayload = event.payload.message;
                 var userIdForBot = messagePayload.author.userId + '_' + appId + '_' + convId;
                 // console.log((req.headers))
-                console.log('=== Inbound Chat from:  ' + displayName + ', Pass to Bot ===')
-                console.log(messagePayload)
+                // console.log('=== Inbound Chat from:  ' + displayName + ', Pass to Bot ===')
+                // console.log(messagePayload)
                 sendToBot(payGen.doGenerateBotPayload(userIdForBot, messagePayload))
               }
             }
