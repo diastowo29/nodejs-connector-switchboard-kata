@@ -27,6 +27,7 @@ basicAuth.username = SMOOCH_KEY_ID;
 basicAuth.password = SMOOCH_KEY_SECRET;
 
 var P_SEND_TO_SMOOCH = 'sendToSmooch'
+var P_SEND_TO_BOT = 'sendToBot'
 var P_TESTING = 'TESTING_PHASE'
 var P_HANDOVER = 'handover'
 
@@ -135,17 +136,14 @@ router.post('/conversation/test', function(req, res, next) {
 })
 
 router.post('/conversation/reply/', async function (req, res, next) {
-  // console.log('HOOK-FROM-KATA userId: ' + req.body.userId);
-  // console.log(req.headers)
-  console.log(JSON.stringify(req.body));
   let userId = req.body.userId.split('_')[0];
   let appId = req.body.userId.split('_')[1];
   var convId = req.body.userId.split('_')[2];
   var response;
 
-
   goLogging('info', P_SEND_TO_SMOOCH, req.body.userId, req.body, BOT_CLIENT)
-  console.log('info', P_SEND_TO_SMOOCH, req.body.userId, req.body, BOT_CLIENT)
+  console.log(`Inbound BOT USER_ID: ${req.body.userId}`)
+  // console.log('info', P_SEND_TO_SMOOCH, req.body.userId, req.body, BOT_CLIENT)
   if (userId == undefined || appId == undefined || convId == undefined) {
     res.status(422).send({
       error: 'invalid userId format'
@@ -212,8 +210,6 @@ router.post('/conversation/handover', function (req, res, next) {
 })
 
 function sendToBot(botPayloadJson) {
-  console.log('-- send message to Bot --')
-
   axios(payGen.doGenerateAxiosRequest('POST', BOT_URL, BOT_AUTH, botPayloadJson)).then(function (response) {
     console.log('Sent to BOT: %s', response.status);
   }).catch(function(err){
