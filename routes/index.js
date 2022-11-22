@@ -207,6 +207,7 @@ router.post('/conversation/handover', function (req, res, next) {
 function sendToBot(botPayloadJson) {
   axios(payGen.doGenerateAxiosRequest('POST', BOT_URL, BOT_AUTH, botPayloadJson)).then(function (response) {
     console.log('Sent to BOT: %s', response.status);
+    goLogging('info', P_SEND_TO_BOT, botPayloadJson.sender, botPayloadJson, BOT_CLIENT)
   }).catch(function(err){
     switchboardPassControl(botPayloadJson.sender.split('_')[1], botPayloadJson.sender.split('_')[2], convId, false, null)
     goLogging('error', P_SEND_TO_BOT, botPayloadJson.sender, err.response, BOT_CLIENT)
