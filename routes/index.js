@@ -28,7 +28,7 @@ basicAuth.password = SMOOCH_KEY_SECRET;
 
 var P_SEND_TO_SMOOCH = 'sendToSmooch'
 var P_SEND_TO_BOT = 'sendToBot'
-var P_TESTING = 'TESTING_PHASE'
+const inProd = true
 var P_HANDOVER = 'handover'
 
 let BOT_URL = 'https://r2.app.yellow.ai/integrations/sendMessage/' + BOT_TOKEN;
@@ -485,13 +485,15 @@ function switchboardPassControl(appId, convId, solved, firstMsgId, userId = null
 }
 
 function goLogging(status, process, to, message, client) {
-  winston.log(status, {
-    process: process,
-    status: status,
-    to: to,
-    message: message,
-    client: client
-  });
+  if (!inProd) {
+    winston.log(status, {
+      process: process,
+      status: status,
+      to: to,
+      message: message,
+      client: client
+    });
+  }
 }
 
 module.exports = router;
