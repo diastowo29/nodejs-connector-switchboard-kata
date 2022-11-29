@@ -89,7 +89,7 @@ router.post('/webhook', function (req, res, next) {
           // var displayName = event.payload.message.author.displayName;
           if (convSwitchboardName == 'bot') {
             if (BYPASS_ZD == 'true' ) {
-              switchboardPassControl(appId, convId, false, null, event.payload.message.author.userId);
+              switchboardPassControl(appId, convId, false, event.payload.message.id, event.payload.message.author.userId);
             } else {
               if (event.payload.message.author.type == "user") {
                 var messagePayload = event.payload.message;
@@ -102,7 +102,7 @@ router.post('/webhook', function (req, res, next) {
           if (convSwitchboardName == 'bot') {
             if (convChannel != 'officehours') { // 'officehours' means automated messages
               console.log('-- unregistered account, pass to zd imidiately -- ')
-              switchboardPassControl(appId, convId, false, null, event.payload.message.author.userId);
+              switchboardPassControl(appId, convId, false, event.payload.message.id, event.payload.message.author.userId);
             }
           }
         }
