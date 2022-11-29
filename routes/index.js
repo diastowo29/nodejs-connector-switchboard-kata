@@ -19,7 +19,7 @@ var BOT_AUTH = process.env.BOT_AUTH || 'xxx';
 var BOT_PROD_AUTH = process.env.BOT_PROD_AUTH || 'xxx';
 var BOT_TOKEN = process.env.BOT_TOKEN || "xxx";
 
-var BOT_CLIENT = 'JAGO'
+var BOT_CLIENT = 'JAGO-DEV'
 
 var LOG_TOKEN = '';
 
