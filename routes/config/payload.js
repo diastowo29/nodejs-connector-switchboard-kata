@@ -1,3 +1,5 @@
+const querystring = require('node:querystring');
+
 const doGenerateAxiosRequest = function(method, url, authCode, jsonPayload){
     var request = {
         method: method,
@@ -11,10 +13,16 @@ const doGenerateAxiosRequest = function(method, url, authCode, jsonPayload){
 }
 
 const doGenerateJagoToken = function(url, clientId,  clientSecret, headerToken){
-  const params = new URLSearchParams();
-  params.append('grant_type', 'client_credentials');
-  params.append('client_id', clientId);
-  params.append('client_secret', clientSecret);
+  
+  const data = {
+    grant_type: 'client_credentials',
+    client_id: clientId,
+    client_secret: clientSecret
+  };
+  // const params = new URLSearchParams();
+  // params.append('grant_type', 'client_credentials');
+  // params.append('client_id', clientId);
+  // params.append('client_secret', clientSecret);
 
   var request = {
       method: "POST",
@@ -23,7 +31,7 @@ const doGenerateJagoToken = function(url, clientId,  clientSecret, headerToken){
           ['x-tyk-auth']: headerToken,
           ['Content-Type']: 'application/x-www-form-urlencoded'
       },
-      params: params
+      data: querystring.stringify(data)
   }
   return request
 }
