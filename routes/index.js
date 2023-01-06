@@ -182,6 +182,7 @@ router.post('/conversation/reply/', async function (req, res, next) {
 router.post('/conversation/handover', function (req, res, next) {
   var solvedByBot = false;
   var ticket_fields = req.body.ticket_fields;
+  var apiClientInstance = new SunshineConversationsClient.ClientsApi();
   if (req.body.userId.split('_').length < 3) {
 
     // goLogging('error', P_HANDOVER, req.body.userId, req.body, BOT_CLIENT)
@@ -197,7 +198,25 @@ router.post('/conversation/handover', function (req, res, next) {
     let userId = req.body.userId.split('_')[0];
     let appId = req.body.userId.split('_')[1];
     var convId = req.body.userId.split('_')[2];
-    switchboardPassControl(appId, convId, solvedByBot, req.body.first_message_id, userId, ticket_fields);
+    apiClientInstance.listClients(appId, userId, {}).then(function(userClient) {
+      console.log('get user client ' + userClient.clients)
+      var isWhatsapp = false;
+      var phoneNumber = '';
+      userClient.clients.forEach(client => {
+        if (client.type == 'whatsapp') {
+          isWhatsapp = true;
+          phoneNumber = client.externalId;
+        }
+      });
+      if (isWhatsapp) {
+        console.log('whatsapp')
+        switchboardPassControl(appId, convId, solvedByBot, req.body.first_message_id, userId, ticket_fields);
+      } else {
+        switchboardPassControl(appId, convId, solvedByBot, req.body.first_message_id, userId, ticket_fields);
+      }
+    }, function(clientErr) {
+      switchboardPassControl(appId, convId, solvedByBot, req.body.first_message_id, userId, ticket_fields);
+    })
     res.status(200).send({  
       status: 'ok'
     })
@@ -461,7 +480,6 @@ function finalSendtoSmooch(userId, appId, convId, messagePost) {
 function switchboardPassControl(appId, convId, solved, firstMsgId, userId = null, ticket_fields = {}) {
   var solvedTag = (solved) ? 'solved_by_bot vvip' : 'unsolved vvip';
 
-  var apiClientInstance = new SunshineConversationsClient.ClientsApi();
   var apiInstance = new SunshineConversationsClient.SwitchboardActionsApi();
   var passControlBody = new SunshineConversationsClient.PassControlBody();
   passControlBody.switchboardIntegration = 'next';
@@ -476,21 +494,12 @@ function switchboardPassControl(appId, convId, solved, firstMsgId, userId = null
   })
   passControlBody.metadata[['first_message_id']] = firstMsgId
 
-  // console.log('passing control chat', passControlBody)
-  console.log('handover user: ' + userId)
-  apiClientInstance.listClients(appId, userId, {}).then(function(userClient) {
-    console.log('get user client ' + userClient.clients)
-    // userClient.clients.forEach(element => {
-      
-    // });
-    apiInstance.passControl(appId, convId, passControlBody).then(function (data) {
-      console.log('API Pass Control called successfully. Returned data: ' + data);
-    }, function (error) {
-      console.log(error)
-    });
-  }, function(clientErr) {
-
-  })
+  console.log('passing control chat', passControlBody)
+  apiInstance.passControl(appId, convId, passControlBody).then(function (data) {
+    console.log('API Pass Control called successfully. Returned data: ' + data);
+  }, function (error) {
+    console.log(error)
+  });
 }
 
 function goLogging(status, process, to, message, client, name) {
