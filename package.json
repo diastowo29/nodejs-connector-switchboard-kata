@@ -16,6 +16,7 @@
     "morgan": "~1.9.1",
     "pg": "^8.7.1",
     "pug": "2.0.0-beta11",
+    "qs": "^6.11.0",
     "sequelize": "^6.13.0",
     "sunshine-conversations-client": "^9.4.3",
     "winston-loggly-bulk": "^3.2.1"

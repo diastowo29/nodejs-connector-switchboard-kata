@@ -1,4 +1,5 @@
-const querystring = require('node:querystring');
+// const querystring = require('node:querystring');
+var qs = require('qs');
 
 const doGenerateAxiosRequest = function(method, url, authCode, jsonPayload){
     var request = {
@@ -31,7 +32,7 @@ const doGenerateJagoToken = function(url, clientId,  clientSecret, headerToken){
           ['x-tyk-auth']: headerToken,
           ['Content-Type']: 'application/x-www-form-urlencoded'
       },
-      data: querystring.stringify(data)
+      data: qs.stringify(data)
   }
   return request
 }
