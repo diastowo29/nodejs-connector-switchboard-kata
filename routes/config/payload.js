@@ -10,6 +10,35 @@ const doGenerateAxiosRequest = function(method, url, authCode, jsonPayload){
     return request
 }
 
+const doGenerateJagoToken = function(url, clientId,  clientSecret, headerToken){
+  var request = {
+      method: "POST",
+      url: url,
+      headers: {
+          ['x-tyk-auth']: headerToken,
+          ['Content-Type']: 'application/x-www-form-urlencoded'
+      },
+      data: {
+        grant_type: 'client_credentials',
+        client_id: clientId,
+        client_secret: clientSecret
+      }
+  }
+  return request
+}
+
+const doGenerateCustomerInfo = function(url, headerToken, bearerToken){
+  var request = {
+      method: "GET",
+      url: url,
+      headers: {
+        Authorization: 'Bearer ' + bearerToken,
+        ['x-tyk-auth']: headerToken
+      }
+  }
+  return request
+}
+
 const doGenerateBotPayload = function  (generatedUserId, messagePayload, botToken) {
     var additionalPayload = {
       user_id: generatedUserId,
@@ -74,5 +103,7 @@ module.exports ={
     doGenerateAxiosRequest, 
     doGenerateBotPayload, 
     doGenerateSmoochPayload,
-    doGenerateSampleMsgPayload
+    doGenerateSampleMsgPayload,
+    doGenerateJagoToken,
+    doGenerateCustomerInfo
 }

@@ -20,6 +20,12 @@ var BOT_PROD_AUTH = process.env.BOT_PROD_AUTH || 'xxx';
 var BOT_TOKEN = process.env.BOT_TOKEN || "xxx";
 var inProd = process.env.LOG_DISABLED || "false";
 
+var getTokenEndpoint = process.env.TOKEN_API || "xxx"
+var getCustomerEndpoint = process.env.CUSTOMER_API || "xxx"
+var clientSecret = process.env.CLIENT_SECRET || "xxx";
+var clientId = process.env.CLIENT_ID || "xxx";
+var headerToken = process.env.HEADER_TOKEN || "xxx";
+
 var BOT_CLIENT = 'JAGO-DEV'
 
 var LOG_TOKEN = '';
@@ -210,7 +216,16 @@ router.post('/conversation/handover', function (req, res, next) {
       });
       if (isWhatsapp) {
         console.log('whatsapp')
-        switchboardPassControl(appId, convId, solvedByBot, req.body.first_message_id, userId, ticket_fields);
+        axios(payGen.doGenerateJagoToken(getTokenEndpoint, clientId, clientSecret, headerToken)).then(function(jagoToken){
+          console.log(JSON.stringify(jagoToken))
+          axios(payGen.doGenerateCustomerInfo(`${getCustomerEndpoint}?phoneNumber=%2B${phoneNumber}`, headerToken, jagoToken.access_token)).then(function(jagoCustomer) {
+            console.log(JSON.stringify(jagoCustomer))
+          }).catch(function(customerErr) {
+            switchboardPassControl(appId, convId, solvedByBot, req.body.first_message_id, userId, ticket_fields);
+          })
+        }).catch(function(tokenErr) {
+          switchboardPassControl(appId, convId, solvedByBot, req.body.first_message_id, userId, ticket_fields);
+        })
       } else {
         switchboardPassControl(appId, convId, solvedByBot, req.body.first_message_id, userId, ticket_fields);
       }
