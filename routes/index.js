@@ -461,6 +461,7 @@ function finalSendtoSmooch(userId, appId, convId, messagePost) {
 function switchboardPassControl(appId, convId, solved, firstMsgId, userId = null, ticket_fields = {}) {
   var solvedTag = (solved) ? 'solved_by_bot vvip' : 'unsolved vvip';
 
+  var apiClientInstance = new SunshineConversationsClient.ClientsApi();
   var apiInstance = new SunshineConversationsClient.SwitchboardActionsApi();
   var passControlBody = new SunshineConversationsClient.PassControlBody();
   passControlBody.switchboardIntegration = 'next';
@@ -475,13 +476,21 @@ function switchboardPassControl(appId, convId, solved, firstMsgId, userId = null
   })
   passControlBody.metadata[['first_message_id']] = firstMsgId
 
-  console.log('passing control chat', passControlBody)
-  
-  apiInstance.passControl(appId, convId, passControlBody).then(function (data) {
-    console.log('API Pass Control called successfully. Returned data: ' + data);
-  }, function (error) {
-    console.log(error)
-  });
+  // console.log('passing control chat', passControlBody)
+  console.log('handover user: ' + userId)
+  apiClientInstance.listClients(appId, userId, {}).then(function(userClient) {
+    console.log('get user client ' + userClient.client)
+    // userClient.clients.forEach(element => {
+      
+    // });
+    apiInstance.passControl(appId, convId, passControlBody).then(function (data) {
+      console.log('API Pass Control called successfully. Returned data: ' + data);
+    }, function (error) {
+      console.log(error)
+    });
+  }, function(clientErr) {
+
+  })
 }
 
 function goLogging(status, process, to, message, client, name) {
