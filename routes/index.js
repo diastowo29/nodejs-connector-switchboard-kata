@@ -218,8 +218,7 @@ router.post('/conversation/handover', function (req, res, next) {
       if (isWhatsapp) {
         console.log('whatsapp')
         axios(payGen.doGenerateJagoToken(getTokenEndpoint, clientId, clientSecret, headerToken)).then(function(jagoToken){
-          console.log(jagoToken)
-          axios(payGen.doGenerateCustomerInfo(`${getCustomerEndpoint}?phoneNumber=%2B${phoneNumber}`, headerToken, jagoToken.access_token)).then(function(jagoCustomer) {
+          axios(payGen.doGenerateCustomerInfo(`${getCustomerEndpoint}?phoneNumber=%2B${phoneNumber}`, headerToken, jagoToken.data.access_token)).then(function(jagoCustomer) {
             console.log((jagoCustomer))
           }).catch(function(customerErr) {
             console.log('error customer')
