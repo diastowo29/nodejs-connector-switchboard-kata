@@ -18,8 +18,9 @@ var BOT_ALIAS = process.env.BOT_ALIAS || "Bita";
 var BOT_AUTH = process.env.BOT_AUTH || 'xxx';
 var BOT_PROD_AUTH = process.env.BOT_PROD_AUTH || 'xxx';
 var BOT_TOKEN = process.env.BOT_TOKEN || "xxx";
+var inProd = process.env.LOG_DISABLED || "false";
 
-var BOT_CLIENT = 'JAGO-DEV'
+var BOT_CLIENT = 'JAGO-PROD'
 
 var LOG_TOKEN = '';
 
@@ -28,7 +29,6 @@ basicAuth.password = SMOOCH_KEY_SECRET;
 
 var P_SEND_TO_SMOOCH = 'sendToSmooch'
 var P_SEND_TO_BOT = 'sendToBot'
-const inProd = false
 var P_HANDOVER = 'handover'
 
 let BOT_URL = 'https://r2.app.yellow.ai/integrations/sendMessage/' + BOT_TOKEN;
@@ -94,7 +94,7 @@ router.post('/webhook', function (req, res, next) {
               if (event.payload.message.author.type == "user") {
                 var messagePayload = event.payload.message;
                 var userIdForBot = messagePayload.author.userId + '_' + appId + '_' + convId;
-                sendToBot(payGen.doGenerateBotPayload(userIdForBot, messagePayload))
+                sendToBot(payGen.doGenerateBotPayload(userIdForBot, messagePayload), event.payload.message.author.displayName)
               }
             }
           }
@@ -135,7 +135,7 @@ router.post('/conversation/reply/', async function (req, res, next) {
   var convId = req.body.userId.split('_')[2];
   var response;
 
-  goLogging('info', P_SEND_TO_SMOOCH, req.body.userId, req.body, BOT_CLIENT)
+  goLogging('info', P_SEND_TO_SMOOCH, req.body.userId, req.body, BOT_CLIENT, "")
   console.log(`Inbound BOT USER_ID: ${req.body.userId}`)
   // console.log('info', P_SEND_TO_SMOOCH, req.body.userId, req.body, BOT_CLIENT)
   if (userId == undefined || appId == undefined || convId == undefined) {
@@ -191,7 +191,7 @@ router.post('/conversation/handover', function (req, res, next) {
     })
   } else {
     solvedByBot = req.body.solved_by_bot;
-    goLogging('info', P_HANDOVER, req.body.userId, req.body, BOT_CLIENT)
+    goLogging('info', P_HANDOVER, req.body.userId, req.body, BOT_CLIENT, "")
     // console.log('info', P_HANDOVER, req.body.userId, req.body, BOT_CLIENT)
     console.log(`Handover USER_ID: ${req.body.userId}`)
     let userId = req.body.userId.split('_')[0];
@@ -204,13 +204,13 @@ router.post('/conversation/handover', function (req, res, next) {
   }
 })
 
-function sendToBot(botPayloadJson) {
+function sendToBot(botPayloadJson, username) {
   axios(payGen.doGenerateAxiosRequest('POST', BOT_URL, BOT_AUTH, botPayloadJson)).then(function (response) {
     console.log('Sent to BOT: %s', response.status);
-    goLogging('info', P_SEND_TO_BOT, botPayloadJson.sender, botPayloadJson, BOT_CLIENT)
+    goLogging('info', P_SEND_TO_BOT, botPayloadJson.sender, botPayloadJson, BOT_CLIENT, username)
   }).catch(function(err){
     switchboardPassControl(botPayloadJson.sender.split('_')[1], botPayloadJson.sender.split('_')[2], convId, false, null)
-    goLogging('error', P_SEND_TO_BOT, botPayloadJson.sender, err.response, BOT_CLIENT)
+    goLogging('error', P_SEND_TO_BOT, botPayloadJson.sender, err.response, BOT_CLIENT, username)
   });
 }
 
@@ -484,12 +484,13 @@ function switchboardPassControl(appId, convId, solved, firstMsgId, userId = null
   });
 }
 
-function goLogging(status, process, to, message, client) {
-  if (!inProd) {
+function goLogging(status, process, to, message, client, name) {
+  if (inProd == 'false') {
     winston.log(status, {
       process: process,
       status: status,
       to: to,
+      username: name,
       message: message,
       client: client
     });
