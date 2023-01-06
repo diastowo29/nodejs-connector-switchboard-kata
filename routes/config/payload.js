@@ -18,11 +18,16 @@ const doGenerateJagoToken = function(url, clientId,  clientSecret, headerToken){
           ['x-tyk-auth']: headerToken,
           ['Content-Type']: 'application/x-www-form-urlencoded'
       },
-      data: {
+      // data: {
+      //   grant_type: 'client_credentials',
+      //   client_id: clientId,
+      //   client_secret: clientSecret
+      // }
+      data: new URLSearchParams({
         grant_type: 'client_credentials',
         client_id: clientId,
         client_secret: clientSecret
-      }
+      })
   }
   return request
 }
