@@ -228,7 +228,7 @@ router.post('/conversation/handover', function (req, res, next) {
           })
         }).catch(function(tokenErr) {
           console.log('error token')
-          console.log(JSON.stringify(tokenErr))
+          console.log(tokenErr)
           // switchboardPassControl(appId, convId, solvedByBot, req.body.first_message_id, userId, ticket_fields);
         })
       } else {

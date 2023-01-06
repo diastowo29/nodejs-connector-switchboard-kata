@@ -34,6 +34,7 @@ const doGenerateJagoToken = function(url, clientId,  clientSecret, headerToken){
       },
       data: qs.stringify(data)
   }
+  console.log(JSON.stringify(request))
   return request
 }
 
