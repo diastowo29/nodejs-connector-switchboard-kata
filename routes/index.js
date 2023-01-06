@@ -216,19 +216,36 @@ router.post('/conversation/handover', function (req, res, next) {
         }
       });
       if (isWhatsapp) {
+        var clevel = '';
         console.log('whatsapp')
         axios(payGen.doGenerateJagoToken(getTokenEndpoint, clientId, clientSecret, headerToken)).then(function(jagoToken){
           axios(payGen.doGenerateCustomerInfo(`${getCustomerEndpoint}?phoneNumber=%2B${phoneNumber}`, headerToken, jagoToken.data.access_token)).then(function(jagoCustomer) {
-            console.log((jagoCustomer))
+            switch (jagoCustomer.data.data.customerLevel) {
+              case 'Jagoan':
+                clevel = 'cl1'
+                break;
+              case 'Silver Jagoan':
+                clevel = 'cl2'
+                break;
+              case 'Gold Jagoan':
+                clevel = 'cl3'
+                break;
+              case 'Platinum Jagoan':
+                clevel = 'cl4'
+                break;
+              default:
+                break;
+            }
+            switchboardPassControl(appId, convId, solvedByBot, req.body.first_message_id, userId, ticket_fields);
           }).catch(function(customerErr) {
-            console.log('error customer')
-            console.log(JSON.stringify(customerErr))
-          // switchboardPassControl(appId, convId, solvedByBot, req.body.first_message_id, userId, ticket_fields);
+            // console.log('error customer')
+            // console.log(JSON.stringify(customerErr))
+          switchboardPassControl(appId, convId, solvedByBot, req.body.first_message_id, userId, ticket_fields);
           })
         }).catch(function(tokenErr) {
-          console.log('error token')
-          console.log(tokenErr)
-          // switchboardPassControl(appId, convId, solvedByBot, req.body.first_message_id, userId, ticket_fields);
+          // console.log('error token')
+          // console.log(tokenErr)
+          switchboardPassControl(appId, convId, solvedByBot, req.body.first_message_id, userId, ticket_fields);
         })
       } else {
         switchboardPassControl(appId, convId, solvedByBot, req.body.first_message_id, userId, ticket_fields);
@@ -497,7 +514,7 @@ function finalSendtoSmooch(userId, appId, convId, messagePost) {
 }
 
 function switchboardPassControl(appId, convId, solved, firstMsgId, userId = null, ticket_fields = {}) {
-  var solvedTag = (solved) ? 'solved_by_bot vvip' : 'unsolved vvip';
+  var solvedTag = (solved) ? 'solved_by_bot' : 'unsolved';
 
   var apiInstance = new SunshineConversationsClient.SwitchboardActionsApi();
   var passControlBody = new SunshineConversationsClient.PassControlBody();

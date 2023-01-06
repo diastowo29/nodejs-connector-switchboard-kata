@@ -20,11 +20,6 @@ const doGenerateJagoToken = function(url, clientId,  clientSecret, headerToken){
     client_id: clientId,
     client_secret: clientSecret
   };
-  // const params = new URLSearchParams();
-  // params.append('grant_type', 'client_credentials');
-  // params.append('client_id', clientId);
-  // params.append('client_secret', clientSecret);
-
   var request = {
       method: "POST",
       url: url,
@@ -34,7 +29,6 @@ const doGenerateJagoToken = function(url, clientId,  clientSecret, headerToken){
       },
       data: qs.stringify(data)
   }
-  console.log(JSON.stringify(request))
   return request
 }
 
