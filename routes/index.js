@@ -221,10 +221,12 @@ router.post('/conversation/handover', function (req, res, next) {
           axios(payGen.doGenerateCustomerInfo(`${getCustomerEndpoint}?phoneNumber=%2B${phoneNumber}`, headerToken, jagoToken.access_token)).then(function(jagoCustomer) {
             console.log(JSON.stringify(jagoCustomer))
           }).catch(function(customerErr) {
-            switchboardPassControl(appId, convId, solvedByBot, req.body.first_message_id, userId, ticket_fields);
+            console.log(JSON.stringify(customerErr))
+          // switchboardPassControl(appId, convId, solvedByBot, req.body.first_message_id, userId, ticket_fields);
           })
         }).catch(function(tokenErr) {
-          switchboardPassControl(appId, convId, solvedByBot, req.body.first_message_id, userId, ticket_fields);
+          console.log(JSON.stringify(tokenErr))
+          // switchboardPassControl(appId, convId, solvedByBot, req.body.first_message_id, userId, ticket_fields);
         })
       } else {
         switchboardPassControl(appId, convId, solvedByBot, req.body.first_message_id, userId, ticket_fields);
