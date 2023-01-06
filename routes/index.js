@@ -479,7 +479,7 @@ function switchboardPassControl(appId, convId, solved, firstMsgId, userId = null
   // console.log('passing control chat', passControlBody)
   console.log('handover user: ' + userId)
   apiClientInstance.listClients(appId, userId, {}).then(function(userClient) {
-    console.log('get user client ' + userClient)
+    console.log('get user client ' + userClient.clients)
     // userClient.clients.forEach(element => {
       
     // });
