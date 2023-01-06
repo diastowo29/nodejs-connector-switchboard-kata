@@ -459,7 +459,7 @@ function finalSendtoSmooch(userId, appId, convId, messagePost) {
 }
 
 function switchboardPassControl(appId, convId, solved, firstMsgId, userId = null, ticket_fields = {}) {
-  var solvedTag = (solved) ? 'solved_by_bot' : 'unsolved';
+  var solvedTag = (solved) ? 'solved_by_bot vvip' : 'unsolved vvip';
 
   var apiInstance = new SunshineConversationsClient.SwitchboardActionsApi();
   var passControlBody = new SunshineConversationsClient.PassControlBody();
