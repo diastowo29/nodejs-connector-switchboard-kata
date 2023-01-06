@@ -11,6 +11,11 @@ const doGenerateAxiosRequest = function(method, url, authCode, jsonPayload){
 }
 
 const doGenerateJagoToken = function(url, clientId,  clientSecret, headerToken){
+  const params = new URLSearchParams();
+  params.append('grant_type', 'client_credentials');
+  params.append('client_id', clientId);
+  params.append('client_secret', clientSecret);
+
   var request = {
       method: "POST",
       url: url,
@@ -18,16 +23,7 @@ const doGenerateJagoToken = function(url, clientId,  clientSecret, headerToken){
           ['x-tyk-auth']: headerToken,
           ['Content-Type']: 'application/x-www-form-urlencoded'
       },
-      // data: {
-      //   grant_type: 'client_credentials',
-      //   client_id: clientId,
-      //   client_secret: clientSecret
-      // }
-      data: new URLSearchParams({
-        grant_type: 'client_credentials',
-        client_id: clientId,
-        client_secret: clientSecret
-      })
+      params: params
   }
   return request
 }
