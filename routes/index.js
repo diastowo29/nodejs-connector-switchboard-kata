@@ -440,14 +440,14 @@ function sendCarouseltoSmooch(userId, appId, convId, messagePayload) {
 function finalSendtoSmooch(userId, appId, convId, messagePost) {
 
   if (gotoSmooch) {
-    goLogging('info', P_SEND_TO_SMOOCH, userId + '_' + appId + '_' + convId, messagePost, BOT_CLIENT)
+    goLogging('info', P_SEND_TO_SMOOCH, userId + '_' + appId + '_' + convId, messagePost, BOT_CLIENT, "")
     var apiInstance = new SunshineConversationsClient.MessagesApi();
 
     try {
       return apiInstance.postMessage(appId, convId, messagePost).then(function (data) {
         return data
       }, function (error) {
-        goLogging('error', P_SEND_TO_SMOOCH, userId + '_' + appId + '_' + convId, error.body, BOT_CLIENT)
+        goLogging('error', P_SEND_TO_SMOOCH, userId + '_' + appId + '_' + convId, error.body, BOT_CLIENT, "")
         return {error: error.body};
     });
     } catch (err) {
@@ -455,7 +455,7 @@ function finalSendtoSmooch(userId, appId, convId, messagePost) {
     }
   } else {
     // winston.log('info', messagePost);
-    goLogging('info', P_SEND_TO_SMOOCH, userId + '_' + appId + '_' + convId, messagePost, BOT_CLIENT)
+    goLogging('info', P_SEND_TO_SMOOCH, userId + '_' + appId + '_' + convId, messagePost, BOT_CLIENT, "")
     console.log(JSON.stringify(messagePost))
   }
 }
