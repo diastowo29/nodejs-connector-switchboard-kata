@@ -236,22 +236,22 @@ router.post('/conversation/handover', function (req, res, next) {
               default:
                 break;
             }
-            switchboardPassControl(appId, convId, solvedByBot, req.body.first_message_id, userId, ticket_fields);
+            switchboardPassControl(appId, convId, solvedByBot, req.body.first_message_id, userId, ticket_fields, clevel);
           }).catch(function(customerErr) {
             // console.log('error customer')
             // console.log(JSON.stringify(customerErr))
-          switchboardPassControl(appId, convId, solvedByBot, req.body.first_message_id, userId, ticket_fields);
+          switchboardPassControl(appId, convId, solvedByBot, req.body.first_message_id, userId, ticket_fields, '');
           })
         }).catch(function(tokenErr) {
           // console.log('error token')
           // console.log(tokenErr)
-          switchboardPassControl(appId, convId, solvedByBot, req.body.first_message_id, userId, ticket_fields);
+          switchboardPassControl(appId, convId, solvedByBot, req.body.first_message_id, userId, ticket_fields, '');
         })
       } else {
-        switchboardPassControl(appId, convId, solvedByBot, req.body.first_message_id, userId, ticket_fields);
+        switchboardPassControl(appId, convId, solvedByBot, req.body.first_message_id, userId, ticket_fields, '');
       }
     }, function(clientErr) {
-      switchboardPassControl(appId, convId, solvedByBot, req.body.first_message_id, userId, ticket_fields);
+      switchboardPassControl(appId, convId, solvedByBot, req.body.first_message_id, userId, ticket_fields, '');
     })
     res.status(200).send({  
       status: 'ok'
@@ -513,8 +513,8 @@ function finalSendtoSmooch(userId, appId, convId, messagePost) {
   }
 }
 
-function switchboardPassControl(appId, convId, solved, firstMsgId, userId = null, ticket_fields = {}) {
-  var solvedTag = (solved) ? 'solved_by_bot' : 'unsolved';
+function switchboardPassControl(appId, convId, solved, firstMsgId, userId = null, ticket_fields = {}, cLevel) {
+  var solvedTag = (solved) ? `solved_by_bot ${cLevel}` : `unsolved ${cLevel}`;
 
   var apiInstance = new SunshineConversationsClient.SwitchboardActionsApi();
   var passControlBody = new SunshineConversationsClient.PassControlBody();
