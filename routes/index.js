@@ -18,7 +18,6 @@ var BOT_ALIAS = process.env.BOT_ALIAS || "Bita";
 var BOT_AUTH = process.env.BOT_AUTH || 'xxx';
 var BOT_PROD_AUTH = process.env.BOT_PROD_AUTH || 'xxx';
 var BOT_TOKEN = process.env.BOT_TOKEN || "xxx";
-// const inProd = false
 var inProd = process.env.LOG_DISABLED || "false";
 
 var BOT_CLIENT = 'JAGO-PROD'
@@ -30,7 +29,6 @@ basicAuth.password = SMOOCH_KEY_SECRET;
 
 var P_SEND_TO_SMOOCH = 'sendToSmooch'
 var P_SEND_TO_BOT = 'sendToBot'
-
 var P_HANDOVER = 'handover'
 
 let BOT_URL = 'https://r2.app.yellow.ai/integrations/sendMessage/' + BOT_TOKEN;
