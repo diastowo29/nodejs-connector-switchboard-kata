@@ -96,7 +96,8 @@ router.post('/webhook', function (req, res, next) {
           // var displayName = event.payload.message.author.displayName;
           if (convSwitchboardName == 'bot') {
             if (BYPASS_ZD == 'true' ) {
-              switchboardPassControl(appId, convId, false, event.payload.message.id, event.payload.message.author.userId);
+              getClevel('false', null, event.payload.message.author.userId, appId, convId, event.payload.message.id)
+              // switchboardPassControl(appId, convId, false, event.payload.message.id, event.payload.message.author.userId);
             } else {
               if (event.payload.message.author.type == "user") {
                 var messagePayload = event.payload.message;
@@ -109,7 +110,8 @@ router.post('/webhook', function (req, res, next) {
           if (convSwitchboardName == 'bot') {
             if (convChannel != 'officehours') { // 'officehours' means automated messages
               console.log('-- unregistered account, pass to zd imidiately -- ')
-              switchboardPassControl(appId, convId, false, event.payload.message.id, event.payload.message.author.userId);
+              getClevel('false', null, event.payload.message.author.userId, appId, convId, event.payload.message.id)
+              // switchboardPassControl(appId, convId, false, event.payload.message.id, event.payload.message.author.userId);
             }
           }
         }
@@ -218,7 +220,7 @@ function sendToBot(botPayloadJson, username) {
     console.log('Sent to BOT: %s', response.status);
     goLogging('info', P_SEND_TO_BOT, botPayloadJson.sender, botPayloadJson, BOT_CLIENT, username)
   }).catch(function(err){
-    switchboardPassControl(botPayloadJson.sender.split('_')[1], botPayloadJson.sender.split('_')[2], convId, false, null)
+    switchboardPassControl(botPayloadJson.sender.split('_')[1], botPayloadJson.sender.split('_')[2], false, null, botPayloadJson.sender.split('_')[0], null, '')
     goLogging('error', P_SEND_TO_BOT, botPayloadJson.sender, err.response, BOT_CLIENT, username)
   });
 }
