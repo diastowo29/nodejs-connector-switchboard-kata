@@ -27,7 +27,7 @@ var clientSecret = process.env.CLIENT_SECRET || "xxx";
 var clientId = process.env.CLIENT_ID || "xxx";
 var headerToken = process.env.HEADER_TOKEN || "xxx";
 
-var BOT_CLIENT = 'JAGO-DEV'
+var BOT_CLIENT = 'JAGO-PROD'
 
 var LOG_TOKEN = '';
 
@@ -477,8 +477,8 @@ function switchboardPassControl(appId, convId, solved, firstMsgId, userId = null
   passControlBody.switchboardIntegration = 'next';
   passControlBody.metadata = {
     ['dataCapture.systemField.tags']: solvedTag,
-    ['dataCapture.ticketField.10051072301335']: convId,
-    ['dataCapture.ticketField.10209017032855']: userId
+    ['dataCapture.ticketField.10530778827415']: convId,
+    ['dataCapture.ticketField.10530780390807']: userId
   }
 
   Object.entries(ticket_fields).map(f => {
