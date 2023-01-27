@@ -5,6 +5,7 @@ var defaultClient = SunshineConversationsClient.ApiClient.instance;
 const axios = require('axios');
 const payGen = require("./config/payload.js")
 const axiosRetry = require('axios-retry');
+// import qs from 'qs';
 
 // const { chatlog_model } = require('../sequelize')
 
@@ -20,7 +21,13 @@ var BOT_PROD_AUTH = process.env.BOT_PROD_AUTH || 'xxx';
 var BOT_TOKEN = process.env.BOT_TOKEN || "xxx";
 var inProd = process.env.LOG_DISABLED || "false";
 
-var BOT_CLIENT = 'JAGO-PROD'
+var getTokenEndpoint = process.env.TOKEN_API || "xxx"
+var getCustomerEndpoint = process.env.CUSTOMER_API || "xxx"
+var clientSecret = process.env.CLIENT_SECRET || "xxx";
+var clientId = process.env.CLIENT_ID || "xxx";
+var headerToken = process.env.HEADER_TOKEN || "xxx";
+
+var BOT_CLIENT = 'JAGO-DEV'
 
 var LOG_TOKEN = '';
 
@@ -89,7 +96,8 @@ router.post('/webhook', function (req, res, next) {
           // var displayName = event.payload.message.author.displayName;
           if (convSwitchboardName == 'bot') {
             if (BYPASS_ZD == 'true' ) {
-              switchboardPassControl(appId, convId, false, event.payload.message.id, event.payload.message.author.userId);
+              getClevel('false', null, event.payload.message.author.userId, appId, convId, event.payload.message.id)
+              // switchboardPassControl(appId, convId, false, event.payload.message.id, event.payload.message.author.userId);
             } else {
               if (event.payload.message.author.type == "user") {
                 var messagePayload = event.payload.message;
@@ -102,7 +110,8 @@ router.post('/webhook', function (req, res, next) {
           if (convSwitchboardName == 'bot') {
             if (convChannel != 'officehours') { // 'officehours' means automated messages
               console.log('-- unregistered account, pass to zd imidiately -- ')
-              switchboardPassControl(appId, convId, false, event.payload.message.id, event.payload.message.author.userId);
+              getClevel('false', null, event.payload.message.author.userId, appId, convId, event.payload.message.id)
+              // switchboardPassControl(appId, convId, false, event.payload.message.id, event.payload.message.author.userId);
             }
           }
         }
@@ -197,7 +206,9 @@ router.post('/conversation/handover', function (req, res, next) {
     let userId = req.body.userId.split('_')[0];
     let appId = req.body.userId.split('_')[1];
     var convId = req.body.userId.split('_')[2];
-    switchboardPassControl(appId, convId, solvedByBot, req.body.first_message_id, userId, ticket_fields);
+    const firstMsgId = req.body.first_message_id
+    
+    getClevel(solvedByBot, ticket_fields, userId, appId, convId, firstMsgId)
     res.status(200).send({  
       status: 'ok'
     })
@@ -209,7 +220,7 @@ function sendToBot(botPayloadJson, username) {
     console.log('Sent to BOT: %s', response.status);
     goLogging('info', P_SEND_TO_BOT, botPayloadJson.sender, botPayloadJson, BOT_CLIENT, username)
   }).catch(function(err){
-    switchboardPassControl(botPayloadJson.sender.split('_')[1], botPayloadJson.sender.split('_')[2], convId, false, null)
+    switchboardPassControl(botPayloadJson.sender.split('_')[1], botPayloadJson.sender.split('_')[2], false, null, botPayloadJson.sender.split('_')[0], null, '')
     goLogging('error', P_SEND_TO_BOT, botPayloadJson.sender, err.response, BOT_CLIENT, username)
   });
 }
@@ -458,16 +469,16 @@ function finalSendtoSmooch(userId, appId, convId, messagePost) {
   }
 }
 
-function switchboardPassControl(appId, convId, solved, firstMsgId, userId = null, ticket_fields = {}) {
-  var solvedTag = (solved) ? 'solved_by_bot' : 'unsolved';
+function switchboardPassControl(appId, convId, solved, firstMsgId, userId = null, ticket_fields = {}, cLevel) {
+  var solvedTag = (solved) ? `solved_by_bot ${cLevel}` : `unsolved ${cLevel}`;
 
   var apiInstance = new SunshineConversationsClient.SwitchboardActionsApi();
   var passControlBody = new SunshineConversationsClient.PassControlBody();
   passControlBody.switchboardIntegration = 'next';
   passControlBody.metadata = {
     ['dataCapture.systemField.tags']: solvedTag,
-    ['dataCapture.ticketField.10530778827415']: convId,
-    ['dataCapture.ticketField.10530780390807']: userId
+    ['dataCapture.ticketField.10051072301335']: convId,
+    ['dataCapture.ticketField.10209017032855']: userId
   }
 
   Object.entries(ticket_fields).map(f => {
@@ -476,7 +487,6 @@ function switchboardPassControl(appId, convId, solved, firstMsgId, userId = null
   passControlBody.metadata[['first_message_id']] = firstMsgId
 
   console.log('passing control chat', passControlBody)
-  
   apiInstance.passControl(appId, convId, passControlBody).then(function (data) {
     console.log('API Pass Control called successfully. Returned data: ' + data);
   }, function (error) {
@@ -495,6 +505,57 @@ function goLogging(status, process, to, message, client, name) {
       client: client
     });
   }
+}
+
+function getClevel (solvedByBot, ticket_fields, userId, appId, convId, firstMsgId) {
+  
+  var apiClientInstance = new SunshineConversationsClient.ClientsApi();
+  apiClientInstance.listClients(appId, userId, {}).then(function(userClient) {
+    var isWhatsapp = false;
+    var phoneNumber = '';
+    userClient.clients.forEach(client => {
+      if (client.type == 'whatsapp') {
+        isWhatsapp = true;
+        phoneNumber = client.externalId;
+      }
+    });
+    if (isWhatsapp) {
+      var clevel = '';
+      axios(payGen.doGenerateJagoToken(getTokenEndpoint, clientId, clientSecret, headerToken)).then(function(jagoToken){
+        axios(payGen.doGenerateCustomerInfo(`${getCustomerEndpoint}?phoneNumber=%2B${phoneNumber}`, headerToken, jagoToken.data.access_token)).then(function(jagoCustomer) {
+          switch (jagoCustomer.data.data.customerLevel) {
+            case 'Jagoan':
+              clevel = 'lv1'
+              break;
+            case 'Silver Jagoan':
+              clevel = 'lv2'
+              break;
+            case 'Gold Jagoan':
+              clevel = 'lv3'
+              break;
+            case 'Platinum Jagoan':
+              clevel = 'lv4'
+              break;
+            case 'VVIP':
+              clevel = 'lv5'
+              break;
+            default:
+              clevel = 'lv1'
+              break;
+          }
+          switchboardPassControl(appId, convId, solvedByBot, firstMsgId, userId, ticket_fields, clevel);
+        }).catch(function(customerErr) {
+        switchboardPassControl(appId, convId, solvedByBot, firstMsgId, userId, ticket_fields, '');
+        })
+      }).catch(function(tokenErr) {
+        switchboardPassControl(appId, convId, solvedByBot, firstMsgId, userId, ticket_fields, '');
+      })
+    } else {
+      switchboardPassControl(appId, convId, solvedByBot, firstMsgId, userId, ticket_fields, '');
+    }
+  }, function(clientErr) {
+    switchboardPassControl(appId, convId, solvedByBot, firstMsgId, userId, ticket_fields, '');
+  })
 }
 
 module.exports = router;

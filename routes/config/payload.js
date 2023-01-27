@@ -1,3 +1,6 @@
+// const querystring = require('node:querystring');
+var qs = require('qs');
+
 const doGenerateAxiosRequest = function(method, url, authCode, jsonPayload){
     var request = {
         method: method,
@@ -8,6 +11,37 @@ const doGenerateAxiosRequest = function(method, url, authCode, jsonPayload){
         data: jsonPayload
     }
     return request
+}
+
+const doGenerateJagoToken = function(url, clientId,  clientSecret, headerToken){
+  
+  const data = {
+    grant_type: 'client_credentials',
+    client_id: clientId,
+    client_secret: clientSecret
+  };
+  var request = {
+      method: "POST",
+      url: url,
+      headers: {
+          ['x-tyk-auth']: headerToken,
+          ['Content-Type']: 'application/x-www-form-urlencoded'
+      },
+      data: qs.stringify(data)
+  }
+  return request
+}
+
+const doGenerateCustomerInfo = function(url, headerToken, bearerToken){
+  var request = {
+      method: "GET",
+      url: url,
+      headers: {
+        Authorization: 'Bearer ' + bearerToken,
+        ['x-tyk-auth']: headerToken
+      }
+  }
+  return request
 }
 
 const doGenerateBotPayload = function  (generatedUserId, messagePayload, botToken) {
@@ -74,5 +108,7 @@ module.exports ={
     doGenerateAxiosRequest, 
     doGenerateBotPayload, 
     doGenerateSmoochPayload,
-    doGenerateSampleMsgPayload
+    doGenerateSampleMsgPayload,
+    doGenerateJagoToken,
+    doGenerateCustomerInfo
 }
