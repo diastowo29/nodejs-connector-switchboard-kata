@@ -189,7 +189,6 @@ router.post('/conversation/reply/', async function (req, res, next) {
 router.post('/conversation/handover', function (req, res, next) {
   var solvedByBot = false;
   var ticket_fields = req.body.ticket_fields;
-  var apiClientInstance = new SunshineConversationsClient.ClientsApi();
   if (req.body.userId.split('_').length < 3) {
 
     // goLogging('error', P_HANDOVER, req.body.userId, req.body, BOT_CLIENT)
@@ -205,54 +204,9 @@ router.post('/conversation/handover', function (req, res, next) {
     let userId = req.body.userId.split('_')[0];
     let appId = req.body.userId.split('_')[1];
     var convId = req.body.userId.split('_')[2];
-    apiClientInstance.listClients(appId, userId, {}).then(function(userClient) {
-      console.log('get user client ' + userClient.clients)
-      var isWhatsapp = false;
-      var phoneNumber = '';
-      userClient.clients.forEach(client => {
-        if (client.type == 'whatsapp') {
-          isWhatsapp = true;
-          phoneNumber = client.externalId;
-        }
-      });
-      if (isWhatsapp) {
-        var clevel = '';
-        console.log('whatsapp')
-        axios(payGen.doGenerateJagoToken(getTokenEndpoint, clientId, clientSecret, headerToken)).then(function(jagoToken){
-          axios(payGen.doGenerateCustomerInfo(`${getCustomerEndpoint}?phoneNumber=%2B${phoneNumber}`, headerToken, jagoToken.data.access_token)).then(function(jagoCustomer) {
-            switch (jagoCustomer.data.data.customerLevel) {
-              case 'Jagoan':
-                clevel = 'cl1'
-                break;
-              case 'Silver Jagoan':
-                clevel = 'cl2'
-                break;
-              case 'Gold Jagoan':
-                clevel = 'cl3'
-                break;
-              case 'Platinum Jagoan':
-                clevel = 'cl4'
-                break;
-              default:
-                break;
-            }
-            switchboardPassControl(appId, convId, solvedByBot, req.body.first_message_id, userId, ticket_fields, clevel);
-          }).catch(function(customerErr) {
-            // console.log('error customer')
-            // console.log(JSON.stringify(customerErr))
-          switchboardPassControl(appId, convId, solvedByBot, req.body.first_message_id, userId, ticket_fields, '');
-          })
-        }).catch(function(tokenErr) {
-          // console.log('error token')
-          // console.log(tokenErr)
-          switchboardPassControl(appId, convId, solvedByBot, req.body.first_message_id, userId, ticket_fields, '');
-        })
-      } else {
-        switchboardPassControl(appId, convId, solvedByBot, req.body.first_message_id, userId, ticket_fields, '');
-      }
-    }, function(clientErr) {
-      switchboardPassControl(appId, convId, solvedByBot, req.body.first_message_id, userId, ticket_fields, '');
-    })
+    const firstMsgId = req.body.first_message_id
+    
+    getClevel(solvedByBot, ticket_fields, userId, appId, convId, firstMsgId)
     res.status(200).send({  
       status: 'ok'
     })
@@ -549,6 +503,57 @@ function goLogging(status, process, to, message, client, name) {
       client: client
     });
   }
+}
+
+function getClevel (solvedByBot, ticket_fields, userId, appId, convId, firstMsgId) {
+  
+  var apiClientInstance = new SunshineConversationsClient.ClientsApi();
+  apiClientInstance.listClients(appId, userId, {}).then(function(userClient) {
+    var isWhatsapp = false;
+    var phoneNumber = '';
+    userClient.clients.forEach(client => {
+      if (client.type == 'whatsapp') {
+        isWhatsapp = true;
+        phoneNumber = client.externalId;
+      }
+    });
+    if (isWhatsapp) {
+      var clevel = '';
+      axios(payGen.doGenerateJagoToken(getTokenEndpoint, clientId, clientSecret, headerToken)).then(function(jagoToken){
+        axios(payGen.doGenerateCustomerInfo(`${getCustomerEndpoint}?phoneNumber=%2B${phoneNumber}`, headerToken, jagoToken.data.access_token)).then(function(jagoCustomer) {
+          switch (jagoCustomer.data.data.customerLevel) {
+            case 'Jagoan':
+              clevel = 'lv1'
+              break;
+            case 'Silver Jagoan':
+              clevel = 'lv2'
+              break;
+            case 'Gold Jagoan':
+              clevel = 'lv3'
+              break;
+            case 'Platinum Jagoan':
+              clevel = 'lv4'
+              break;
+            case 'VVIP':
+              clevel = 'lv5'
+              break;
+            default:
+              clevel = 'lv1'
+              break;
+          }
+          switchboardPassControl(appId, convId, solvedByBot, firstMsgId, userId, ticket_fields, clevel);
+        }).catch(function(customerErr) {
+        switchboardPassControl(appId, convId, solvedByBot, firstMsgId, userId, ticket_fields, '');
+        })
+      }).catch(function(tokenErr) {
+        switchboardPassControl(appId, convId, solvedByBot, firstMsgId, userId, ticket_fields, '');
+      })
+    } else {
+      switchboardPassControl(appId, convId, solvedByBot, firstMsgId, userId, ticket_fields, '');
+    }
+  }, function(clientErr) {
+    switchboardPassControl(appId, convId, solvedByBot, firstMsgId, userId, ticket_fields, '');
+  })
 }
 
 module.exports = router;
