@@ -513,14 +513,14 @@ function finalSendtoSmooch(userId, appId, convId, messagePost) {
   }
 }
 
-function switchboardPassControl(appId, convId, solved, firstMsgId, userId = null, ticket_fields = {}) {
-  var solvedTag = (solved) ? 'solved_by_bot' : 'unsolved';
+function switchboardPassControl(appId, convId, solved, firstMsgId, userId = null, ticket_fields = {}, cLevel) {
+  var ticketTags = (solved) ? `solved_by_bot ${cLevel}` : `unsolved ${cLevel}`;
 
   var apiInstance = new SunshineConversationsClient.SwitchboardActionsApi();
   var passControlBody = new SunshineConversationsClient.PassControlBody();
   passControlBody.switchboardIntegration = 'next';
   passControlBody.metadata = {
-    ['dataCapture.systemField.tags']: solvedTag,
+    ['dataCapture.systemField.tags']: ticketTags,
     ['dataCapture.ticketField.10051072301335']: convId,
     ['dataCapture.ticketField.10209017032855']: userId
   }
