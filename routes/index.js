@@ -27,7 +27,7 @@ var clientSecret = process.env.CLIENT_SECRET || "xxx";
 var clientId = process.env.CLIENT_ID || "xxx";
 var headerToken = process.env.HEADER_TOKEN || "xxx";
 
-var BOT_CLIENT = 'JAGO-PROD'
+var BOT_CLIENT = 'JAGO-DEV'
 
 var LOG_TOKEN = '';
 
@@ -96,8 +96,7 @@ router.post('/webhook', function (req, res, next) {
           // var displayName = event.payload.message.author.displayName;
           if (convSwitchboardName == 'bot') {
             if (BYPASS_ZD == 'true' ) {
-              getClevel('false', null, event.payload.message.author.userId, appId, convId, event.payload.message.id)
-              // switchboardPassControl(appId, convId, false, event.payload.message.id, event.payload.message.author.userId);
+              getClevel('false', null, event.payload.message.author.userId, appId, convId, event.payload.message.id, false)
             } else {
               if (event.payload.message.author.type == "user") {
                 var messagePayload = event.payload.message;
@@ -110,8 +109,7 @@ router.post('/webhook', function (req, res, next) {
           if (convSwitchboardName == 'bot') {
             if (convChannel != 'officehours') { // 'officehours' means automated messages
               console.log('-- unregistered account, pass to zd imidiately -- ')
-              getClevel('false', null, event.payload.message.author.userId, appId, convId, event.payload.message.id)
-              // switchboardPassControl(appId, convId, false, event.payload.message.id, event.payload.message.author.userId);
+              getClevel('false', null, event.payload.message.author.userId, appId, convId, event.payload.message.id, false)
             }
           }
         }
@@ -189,16 +187,15 @@ router.post('/conversation/reply/', async function (req, res, next) {
 });
 
 router.post('/conversation/handover', function (req, res, next) {
-  var solvedByBot = false;
-  var ticket_fields = req.body.ticket_fields;
   if (req.body.userId.split('_').length < 3) {
-
     // goLogging('error', P_HANDOVER, req.body.userId, req.body, BOT_CLIENT)
-
     res.status(400).send({
       error: 'userId: not registered/wrong pattern'
     })
   } else {
+    var solvedByBot = false;
+    var ticket_fields = req.body.ticket_fields;
+    var answerByBot = (req.body.answer_by_bot) ? req.body.answer_by_bot : false;
     solvedByBot = req.body.solved_by_bot;
     goLogging('info', P_HANDOVER, req.body.userId, req.body, BOT_CLIENT, "")
     // console.log('info', P_HANDOVER, req.body.userId, req.body, BOT_CLIENT)
@@ -208,7 +205,7 @@ router.post('/conversation/handover', function (req, res, next) {
     var convId = req.body.userId.split('_')[2];
     const firstMsgId = req.body.first_message_id
     
-    getClevel(solvedByBot, ticket_fields, userId, appId, convId, firstMsgId)
+    getClevel(solvedByBot, ticket_fields, userId, appId, convId, firstMsgId, answerByBot)
     res.status(200).send({  
       status: 'ok'
     })
@@ -220,7 +217,7 @@ function sendToBot(botPayloadJson, username) {
     console.log('Sent to BOT: %s', response.status);
     goLogging('info', P_SEND_TO_BOT, botPayloadJson.sender, botPayloadJson, BOT_CLIENT, username)
   }).catch(function(err){
-    switchboardPassControl(botPayloadJson.sender.split('_')[1], botPayloadJson.sender.split('_')[2], false, null, botPayloadJson.sender.split('_')[0], null, '')
+    switchboardPassControl(botPayloadJson.sender.split('_')[1], botPayloadJson.sender.split('_')[2], false, null, botPayloadJson.sender.split('_')[0], null, '', false)
     goLogging('error', P_SEND_TO_BOT, botPayloadJson.sender, err.response, BOT_CLIENT, username)
   });
 }
@@ -469,16 +466,17 @@ function finalSendtoSmooch(userId, appId, convId, messagePost) {
   }
 }
 
-function switchboardPassControl(appId, convId, solved, firstMsgId, userId = null, ticket_fields = {}, cLevel) {
+function switchboardPassControl(appId, convId, solved, firstMsgId, userId = null, ticket_fields = {}, cLevel, answerByBot) {
   var solvedTag = (solved) ? `solved_by_bot ${cLevel}` : `unsolved ${cLevel}`;
+  solvedTag = (answerByBot) ? `${solvedTag} answer_by_bot` : solvedTag
 
   var apiInstance = new SunshineConversationsClient.SwitchboardActionsApi();
   var passControlBody = new SunshineConversationsClient.PassControlBody();
   passControlBody.switchboardIntegration = 'next';
   passControlBody.metadata = {
     ['dataCapture.systemField.tags']: solvedTag,
-    ['dataCapture.ticketField.10530778827415']: convId,
-    ['dataCapture.ticketField.10530780390807']: userId
+    ['dataCapture.ticketField.10051072301335']: convId,
+    ['dataCapture.ticketField.10209017032855']: userId
   }
 
   Object.entries(ticket_fields).map(f => {
@@ -507,7 +505,7 @@ function goLogging(status, process, to, message, client, name) {
   }
 }
 
-function getClevel (solvedByBot, ticket_fields, userId, appId, convId, firstMsgId) {
+function getClevel (solvedByBot, ticket_fields, userId, appId, convId, firstMsgId, answerByBot) {
   
   var apiClientInstance = new SunshineConversationsClient.ClientsApi();
   apiClientInstance.listClients(appId, userId, {}).then(function(userClient) {
@@ -543,18 +541,18 @@ function getClevel (solvedByBot, ticket_fields, userId, appId, convId, firstMsgI
               clevel = 'lv1'
               break;
           }
-          switchboardPassControl(appId, convId, solvedByBot, firstMsgId, userId, ticket_fields, clevel);
+          switchboardPassControl(appId, convId, solvedByBot, firstMsgId, userId, ticket_fields, clevel, answerByBot);
         }).catch(function(customerErr) {
-        switchboardPassControl(appId, convId, solvedByBot, firstMsgId, userId, ticket_fields, '');
+        switchboardPassControl(appId, convId, solvedByBot, firstMsgId, userId, ticket_fields, '', answerByBot);
         })
       }).catch(function(tokenErr) {
-        switchboardPassControl(appId, convId, solvedByBot, firstMsgId, userId, ticket_fields, '');
+        switchboardPassControl(appId, convId, solvedByBot, firstMsgId, userId, ticket_fields, '', answerByBot);
       })
     } else {
-      switchboardPassControl(appId, convId, solvedByBot, firstMsgId, userId, ticket_fields, '');
+      switchboardPassControl(appId, convId, solvedByBot, firstMsgId, userId, ticket_fields, '', answerByBot);
     }
   }, function(clientErr) {
-    switchboardPassControl(appId, convId, solvedByBot, firstMsgId, userId, ticket_fields, '');
+    switchboardPassControl(appId, convId, solvedByBot, firstMsgId, userId, ticket_fields, '', answerByBot);
   })
 }
 
