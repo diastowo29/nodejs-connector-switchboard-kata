@@ -27,7 +27,7 @@ var clientSecret = process.env.CLIENT_SECRET || "xxx";
 var clientId = process.env.CLIENT_ID || "xxx";
 var headerToken = process.env.HEADER_TOKEN || "xxx";
 
-var BOT_CLIENT = 'JAGO-DEV'
+var BOT_CLIENT = 'JAGO-PROD'
 
 var LOG_TOKEN = '';
 
