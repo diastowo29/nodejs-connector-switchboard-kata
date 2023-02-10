@@ -195,7 +195,7 @@ router.post('/conversation/handover', function (req, res, next) {
   } else {
     var solvedByBot = false;
     var ticket_fields = req.body.ticket_fields;
-    var answerByBot = (req.body.answer_by_bot) ? req.body.answer_by_bot : false;
+    var answerByBot = (req.body.answered_by_bot) ? req.body.answered_by_bot : false;
     solvedByBot = req.body.solved_by_bot;
     goLogging('info', P_HANDOVER, req.body.userId, req.body, BOT_CLIENT, "")
     // console.log('info', P_HANDOVER, req.body.userId, req.body, BOT_CLIENT)
