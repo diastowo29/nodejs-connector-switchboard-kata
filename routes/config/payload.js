@@ -44,30 +44,30 @@ const doGenerateCustomerInfo = function(url, headerToken, bearerToken){
   return request
 }
 
-const doGenerateBotPayload = function  (generatedUserId, messagePayload, botToken) {
-    var additionalPayload = {
-      user_id: generatedUserId,
-      message_id: messagePayload.id,
-      channel: messagePayload.source.type,
-      extra_details: {}
-    }
-    var key = messagePayload.content.type;
-    var content;
-  
-    if (messagePayload.content.type == 'text') {
-      content = messagePayload.content.text
-    } else {
-      content = messagePayload.content.mediaUrl
-    }
-  
-    return {
-      sender: generatedUserId,
-      to: botToken,
-      [key]: content,
+const doGenerateBotPayload = function  (generatedUserId, messagePayload) {
+  var content;
+  var msgType = (messagePayload.content.type == 'text') ? 'text' : 'data';
+  var msgKey = (messagePayload.content.type == 'text') ? 'content': 'payload'
+
+  if (messagePayload.content.type == 'text') {
+    content = messagePayload.content.text
+  } else {
+    content = {
       type: messagePayload.content.type,
-      payload: additionalPayload
+      url: messagePayload.content.mediaUrl
     }
   }
+
+  const messagesPayload = {
+    type: msgType,
+    [msgKey]: content
+  }
+  
+  return {
+    userId: generatedUserId,
+    messages: messagesPayload
+  }
+}
 
   const doGenerateSmoochPayload = function  (messageContent) {
     var messagePost = new SunshineConversationsClient.MessagePost();

@@ -27,7 +27,7 @@ var clientSecret = process.env.CLIENT_SECRET || "xxx";
 var clientId = process.env.CLIENT_ID || "xxx";
 var headerToken = process.env.HEADER_TOKEN || "xxx";
 
-var BOT_CLIENT = 'JAGO-DEV'
+var BOT_CLIENT = 'PDI-ROKITV'
 
 var LOG_TOKEN = '';
 
@@ -38,7 +38,7 @@ var P_SEND_TO_SMOOCH = 'sendToSmooch'
 var P_SEND_TO_BOT = 'sendToBot'
 var P_HANDOVER = 'handover'
 
-let BOT_URL = 'https://r2.app.yellow.ai/integrations/sendMessage/' + BOT_TOKEN;
+let BOT_URL = 'https://kanal.kata.ai/receive_message/' + BOT_TOKEN;
 
 var gotoSmooch = true;
 
@@ -62,20 +62,6 @@ axiosRetry(axios, {
   }
 })
 
-router.get('/testing', function (req, res, next) {
-  // res.status(200).send(payGen.doGenerateBotPayload('userid123', payGen.doGenerateSampleMsgPayload('halo')));
-  res.status(200).send({});
-})
-
-router.get('/checkenv', function (req, res, next) {
-  // res.status(200).send({
-  //   smooch_id: SMOOCH_KEY_ID,
-  //   smooch_secret: SMOOCH_KEY_SECRET,
-  //   bot_id: BOT_TOKEN,
-  //   bot_auth: BOT_AUTH
-  // })
-})
-
 router.get('/webhook', function (req, res, next) {
   goLogging('info', P_SEND_TO_SMOOCH, 'test-logging', 'test-logging', BOT_CLIENT)
   res.status(200).send({});
@@ -96,12 +82,14 @@ router.post('/webhook', function (req, res, next) {
           // var displayName = event.payload.message.author.displayName;
           if (convSwitchboardName == 'bot') {
             if (BYPASS_ZD == 'true' ) {
-              getClevel('false', null, event.payload.message.author.userId, appId, convId, event.payload.message.id, false)
+          switchboardPassControl(appId, convId, firstMsgId);
+          // getClevel('false', null, event.payload.message.author.userId, appId, convId, event.payload.message.id, false)
             } else {
               if (event.payload.message.author.type == "user") {
                 var messagePayload = event.payload.message;
                 var userIdForBot = messagePayload.author.userId + '_' + appId + '_' + convId;
-                sendToBot(payGen.doGenerateBotPayload(userIdForBot, messagePayload), event.payload.message.author.displayName)
+                // sendToBot(payGen.doGenerateBotPayload(userIdForBot, messagePayload), event.payload.message.author.displayName)
+                console.log(JSON.stringify(payGen.doGenerateBotPayload(userIdForBot, messagePayload)))
               }
             }
           }
@@ -109,7 +97,8 @@ router.post('/webhook', function (req, res, next) {
           if (convSwitchboardName == 'bot') {
             if (convChannel != 'officehours') { // 'officehours' means automated messages
               console.log('-- unregistered account, pass to zd imidiately -- ')
-              getClevel('false', null, event.payload.message.author.userId, appId, convId, event.payload.message.id, false)
+          switchboardPassControl(appId, convId, firstMsgId);
+          // getClevel('false', null, event.payload.message.author.userId, appId, convId, event.payload.message.id, false)
             }
           }
         }
@@ -188,7 +177,7 @@ router.post('/conversation/reply/', async function (req, res, next) {
 
 router.post('/conversation/handover', function (req, res, next) {
   if (req.body.userId.split('_').length < 3) {
-    // goLogging('error', P_HANDOVER, req.body.userId, req.body, BOT_CLIENT)
+    goLogging('error', P_HANDOVER, req.body.userId, req.body, BOT_CLIENT, '')
     res.status(400).send({
       error: 'userId: not registered/wrong pattern'
     })
@@ -204,8 +193,7 @@ router.post('/conversation/handover', function (req, res, next) {
     let appId = req.body.userId.split('_')[1];
     var convId = req.body.userId.split('_')[2];
     const firstMsgId = req.body.first_message_id
-    
-    getClevel(solvedByBot, ticket_fields, userId, appId, convId, firstMsgId, answerByBot)
+    switchboardPassControl(appId, convId, firstMsgId);
     res.status(200).send({  
       status: 'ok'
     })
@@ -217,7 +205,7 @@ function sendToBot(botPayloadJson, username) {
     console.log('Sent to BOT: %s', response.status);
     goLogging('info', P_SEND_TO_BOT, botPayloadJson.sender, botPayloadJson, BOT_CLIENT, username)
   }).catch(function(err){
-    switchboardPassControl(botPayloadJson.sender.split('_')[1], botPayloadJson.sender.split('_')[2], false, null, botPayloadJson.sender.split('_')[0], null, '', false)
+    switchboardPassControl(botPayloadJson.sender.split('_')[1], botPayloadJson.sender.split('_')[2], null)
     goLogging('error', P_SEND_TO_BOT, botPayloadJson.sender, err.response, BOT_CLIENT, username)
   });
 }
@@ -466,24 +454,16 @@ function finalSendtoSmooch(userId, appId, convId, messagePost) {
   }
 }
 
-function switchboardPassControl(appId, convId, solved, firstMsgId, userId = null, ticket_fields = {}, cLevel, answerByBot) {
-  var solvedTag = (solved) ? `solved_by_bot ${cLevel}` : `unsolved ${cLevel}`;
-  solvedTag = (answerByBot) ? `${solvedTag} answer_by_bot` : solvedTag
-
+function switchboardPassControl(appId, convId, firstMsgId) {
+  // var solvedTag = ``;
+ 
   var apiInstance = new SunshineConversationsClient.SwitchboardActionsApi();
   var passControlBody = new SunshineConversationsClient.PassControlBody();
   passControlBody.switchboardIntegration = 'next';
   passControlBody.metadata = {
-    ['dataCapture.systemField.tags']: solvedTag,
-    ['dataCapture.ticketField.10051072301335']: convId,
+    // ['dataCapture.systemField.tags']: solvedTag,
     ['first_message_id']: firstMsgId,
-    ['dataCapture.userField.external_id']: 'tes1'
   }
-
-  Object.entries(ticket_fields).map(f => {
-    passControlBody.metadata[[`dataCapture.ticketField.${f[0]}`]] = f[1] ?? 0
-  })
-  passControlBody.metadata[['first_message_id']] = firstMsgId
 
   console.log('passing control chat', passControlBody)
   apiInstance.passControl(appId, convId, passControlBody).then(function (data) {
