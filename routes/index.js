@@ -21,11 +21,11 @@ var BOT_PROD_AUTH = process.env.BOT_PROD_AUTH || 'xxx';
 var BOT_TOKEN = process.env.BOT_TOKEN || "xxx";
 var inProd = process.env.LOG_DISABLED || "false";
 
-var getTokenEndpoint = process.env.TOKEN_API || "xxx"
-var getCustomerEndpoint = process.env.CUSTOMER_API || "xxx"
-var clientSecret = process.env.CLIENT_SECRET || "xxx";
-var clientId = process.env.CLIENT_ID || "xxx";
-var headerToken = process.env.HEADER_TOKEN || "xxx";
+// var getTokenEndpoint = process.env.TOKEN_API || "xxx"
+// var getCustomerEndpoint = process.env.CUSTOMER_API || "xxx"
+// var clientSecret = process.env.CLIENT_SECRET || "xxx";
+// var clientId = process.env.CLIENT_ID || "xxx";
+// var headerToken = process.env.HEADER_TOKEN || "xxx";
 
 var BOT_CLIENT = 'PDI-ROKITV'
 
@@ -74,7 +74,6 @@ router.post('/webhook', function (req, res, next) {
       var convChannel = event.payload.message.source.type;
       var convIntegrationId = event.payload.message.source.integrationId;
       var convId = event.payload.conversation.id;
-      // taro custom payload untuk tambah tipe user (premium bot a, non bot b)
       if ('activeSwitchboardIntegration' in event.payload.conversation) {
         var convSwitchboardName = event.payload.conversation.activeSwitchboardIntegration.name;
         if (CHANNEL_ACTIVE_ACCOUNT.includes(convIntegrationId)) {
@@ -82,14 +81,13 @@ router.post('/webhook', function (req, res, next) {
           // var displayName = event.payload.message.author.displayName;
           if (convSwitchboardName == 'bot') {
             if (BYPASS_ZD == 'true' ) {
-          switchboardPassControl(appId, convId, firstMsgId);
-          // getClevel('false', null, event.payload.message.author.userId, appId, convId, event.payload.message.id, false)
+              switchboardPassControl(appId, convId, firstMsgId);
             } else {
               if (event.payload.message.author.type == "user") {
                 var messagePayload = event.payload.message;
                 var userIdForBot = messagePayload.author.userId + '_' + appId + '_' + convId;
-                // sendToBot(payGen.doGenerateBotPayload(userIdForBot, messagePayload), event.payload.message.author.displayName)
-                console.log(JSON.stringify(payGen.doGenerateBotPayload(userIdForBot, messagePayload)))
+                sendToBot(payGen.doGenerateBotPayload(userIdForBot, messagePayload), event.payload.message.author.displayName)
+                // console.log(JSON.stringify(payGen.doGenerateBotPayload(userIdForBot, messagePayload)))
               }
             }
           }
@@ -97,8 +95,7 @@ router.post('/webhook', function (req, res, next) {
           if (convSwitchboardName == 'bot') {
             if (convChannel != 'officehours') { // 'officehours' means automated messages
               console.log('-- unregistered account, pass to zd imidiately -- ')
-          switchboardPassControl(appId, convId, firstMsgId);
-          // getClevel('false', null, event.payload.message.author.userId, appId, convId, event.payload.message.id, false)
+              switchboardPassControl(appId, convId, firstMsgId);
             }
           }
         }
@@ -133,7 +130,6 @@ router.post('/conversation/reply/', async function (req, res, next) {
 
   goLogging('info', P_SEND_TO_SMOOCH, req.body.userId, req.body, BOT_CLIENT, "")
   console.log(`Inbound BOT USER_ID: ${req.body.userId}`)
-  // console.log('info', P_SEND_TO_SMOOCH, req.body.userId, req.body, BOT_CLIENT)
   if (userId == undefined || appId == undefined || convId == undefined) {
     res.status(422).send({
       error: 'invalid userId format'
@@ -146,24 +142,25 @@ router.post('/conversation/reply/', async function (req, res, next) {
           response = smoochResponse;
         } else {
           if (message.payload.template_type == 'carousel') {
-            await sendCarouseltoSmooch(userId, appId, convId, message.payload);
+            response = await sendCarouseltoSmooch(userId, appId, convId, message.payload);
           } else if (message.payload.template_type == 'image') {
-            await sendImagetoSmooch(userId, appId, convId, message.payload);
+            response = await sendImagetoSmooch(userId, appId, convId, message.payload);
           } else if (message.payload.template_type == 'location') {
-            await sendLocationtoSmooch(userId, appId, convId, message.payload);
+            response = await sendLocationtoSmooch(userId, appId, convId, message.payload);
           } else if (message.payload.template_type == 'button') {
             console.log('not suppported on Smooch')
           } else if (message.payload.template_type == 'text') {
-            await sendQuickReplySmooch(userId, appId, convId, message.payload);
+            response = await sendQuickReplySmooch(userId, appId, convId, message.payload);
           } else if (message.payload.template_type == 'list_reply') {
-            await sendQuickReplySmooch(userId, appId, convId, message.payload);
+            response = await sendQuickReplySmooch(userId, appId, convId, message.payload);
           } else {
-            await sendFiletoSmooch(userId, appId, convId, message.payload);
+            response = await sendFiletoSmooch(userId, appId, convId, message.payload);
           }
         }
       i++;
     }
     var statusCode;
+    console.log(JSON.stringify(response))
     if ('error' in response) {
       statusCode = 422
       response = response.error
@@ -201,11 +198,12 @@ router.post('/conversation/handover', function (req, res, next) {
 })
 
 function sendToBot(botPayloadJson, username) {
-  axios(payGen.doGenerateAxiosRequest('POST', BOT_URL, BOT_AUTH, botPayloadJson)).then(function (response) {
+  axios(payGen.doGenerateAxiosRequest('POST', BOT_URL, botPayloadJson)).then(function (response) {
     console.log('Sent to BOT: %s', response.status);
     goLogging('info', P_SEND_TO_BOT, botPayloadJson.sender, botPayloadJson, BOT_CLIENT, username)
   }).catch(function(err){
-    switchboardPassControl(botPayloadJson.sender.split('_')[1], botPayloadJson.sender.split('_')[2], null)
+    console.log(err)
+    // switchboardPassControl(botPayloadJson.sender.split('_')[1], botPayloadJson.sender.split('_')[2], null)
     goLogging('error', P_SEND_TO_BOT, botPayloadJson.sender, err.response, BOT_CLIENT, username)
   });
 }
@@ -484,57 +482,6 @@ function goLogging(status, process, to, message, client, name) {
       client: client
     });
   }
-}
-
-function getClevel (solvedByBot, ticket_fields, userId, appId, convId, firstMsgId, answerByBot) {
-  
-  var apiClientInstance = new SunshineConversationsClient.ClientsApi();
-  apiClientInstance.listClients(appId, userId, {}).then(function(userClient) {
-    var isWhatsapp = false;
-    var phoneNumber = '';
-    userClient.clients.forEach(client => {
-      if (client.type == 'whatsapp') {
-        isWhatsapp = true;
-        phoneNumber = client.externalId;
-      }
-    });
-    if (isWhatsapp) {
-      var clevel = '';
-      axios(payGen.doGenerateJagoToken(getTokenEndpoint, clientId, clientSecret, headerToken)).then(function(jagoToken){
-        axios(payGen.doGenerateCustomerInfo(`${getCustomerEndpoint}?phoneNumber=%2B${phoneNumber}`, headerToken, jagoToken.data.access_token)).then(function(jagoCustomer) {
-          switch (jagoCustomer.data.data.customerLevel) {
-            case 'Jagoan':
-              clevel = 'lv1'
-              break;
-            case 'Silver Jagoan':
-              clevel = 'lv2'
-              break;
-            case 'Gold Jagoan':
-              clevel = 'lv3'
-              break;
-            case 'Platinum Jagoan':
-              clevel = 'lv4'
-              break;
-            case 'VVIP':
-              clevel = 'lv5'
-              break;
-            default:
-              clevel = 'lv1'
-              break;
-          }
-          switchboardPassControl(appId, convId, solvedByBot, firstMsgId, userId, ticket_fields, clevel, answerByBot);
-        }).catch(function(customerErr) {
-        switchboardPassControl(appId, convId, solvedByBot, firstMsgId, userId, ticket_fields, '', answerByBot);
-        })
-      }).catch(function(tokenErr) {
-        switchboardPassControl(appId, convId, solvedByBot, firstMsgId, userId, ticket_fields, '', answerByBot);
-      })
-    } else {
-      switchboardPassControl(appId, convId, solvedByBot, firstMsgId, userId, ticket_fields, '', answerByBot);
-    }
-  }, function(clientErr) {
-    switchboardPassControl(appId, convId, solvedByBot, firstMsgId, userId, ticket_fields, '', answerByBot);
-  })
 }
 
 module.exports = router;
