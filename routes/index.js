@@ -205,7 +205,7 @@ router.post('/conversation/handover', function (req, res, next) {
     var convId = req.body.userId.split('_')[2];
     const firstMsgId = req.body.first_message_id
     
-    getClevel(solvedByBot, ticket_fields, userId, appId, convId, firstMsgId, answerByBot)
+    getClevel(solvedByBot, ticket_fields, userId, appId, convId, firstMsgId, answerByBot, req.body)
     res.status(200).send({  
       status: 'ok'
     })
@@ -466,9 +466,10 @@ function finalSendtoSmooch(userId, appId, convId, messagePost) {
   }
 }
 
-function switchboardPassControl(appId, convId, solved, firstMsgId, userId = null, ticket_fields = {}, cLevel, answerByBot) {
+function switchboardPassControl(appId, convId, solved, firstMsgId, userId = null, ticket_fields = {}, cLevel, answerByBot, handoverBody) {
   var solvedTag = (solved) ? `solved_by_bot ${cLevel}` : `unsolved ${cLevel}`;
   solvedTag = (answerByBot) ? `${solvedTag} answer_by_bot` : solvedTag
+  solvedTag = (handoverBody.tags.includes('user-idle')) ? `${solvedTag} user-idle` : solvedTag
 
   var apiInstance = new SunshineConversationsClient.SwitchboardActionsApi();
   var passControlBody = new SunshineConversationsClient.PassControlBody();
@@ -505,7 +506,7 @@ function goLogging(status, process, to, message, client, name) {
   }
 }
 
-function getClevel (solvedByBot, ticket_fields, userId, appId, convId, firstMsgId, answerByBot) {
+function getClevel (solvedByBot, ticket_fields, userId, appId, convId, firstMsgId, answerByBot, handoverBody) {
   
   var apiClientInstance = new SunshineConversationsClient.ClientsApi();
   apiClientInstance.listClients(appId, userId, {}).then(function(userClient) {
@@ -541,18 +542,18 @@ function getClevel (solvedByBot, ticket_fields, userId, appId, convId, firstMsgI
               clevel = 'lv1'
               break;
           }
-          switchboardPassControl(appId, convId, solvedByBot, firstMsgId, userId, ticket_fields, clevel, answerByBot);
+          switchboardPassControl(appId, convId, solvedByBot, firstMsgId, userId, ticket_fields, clevel, answerByBot, handoverBody);
         }).catch(function(customerErr) {
-        switchboardPassControl(appId, convId, solvedByBot, firstMsgId, userId, ticket_fields, '', answerByBot);
+        switchboardPassControl(appId, convId, solvedByBot, firstMsgId, userId, ticket_fields, '', answerByBot, handoverBody);
         })
       }).catch(function(tokenErr) {
-        switchboardPassControl(appId, convId, solvedByBot, firstMsgId, userId, ticket_fields, '', answerByBot);
+        switchboardPassControl(appId, convId, solvedByBot, firstMsgId, userId, ticket_fields, '', answerByBot, handoverBody);
       })
     } else {
-      switchboardPassControl(appId, convId, solvedByBot, firstMsgId, userId, ticket_fields, '', answerByBot);
+      switchboardPassControl(appId, convId, solvedByBot, firstMsgId, userId, ticket_fields, '', answerByBot, handoverBody);
     }
   }, function(clientErr) {
-    switchboardPassControl(appId, convId, solvedByBot, firstMsgId, userId, ticket_fields, '', answerByBot);
+    switchboardPassControl(appId, convId, solvedByBot, firstMsgId, userId, ticket_fields, '', answerByBot, handoverBody);
   })
 }
 
