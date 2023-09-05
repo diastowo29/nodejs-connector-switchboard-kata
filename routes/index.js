@@ -137,12 +137,12 @@ router.post('/conversation/test', function(req, res, next) {
 })
 
 router.post('/conversation/reply/', async function (req, res, next) {
+  goLogging('info', P_SEND_TO_SMOOCH, req.body.userId, req.body, BOT_CLIENT, "")
   let userId = req.body.userId.split('_')[0];
   let appId = req.body.userId.split('_')[1];
   var convId = req.body.userId.split('_')[2];
   var response;
 
-  goLogging('info', P_SEND_TO_SMOOCH, req.body.userId, req.body, BOT_CLIENT, "")
   console.log(`Inbound BOT USER_ID: ${req.body.userId}`)
   // console.log('info', P_SEND_TO_SMOOCH, req.body.userId, req.body, BOT_CLIENT)
   if (userId == undefined || appId == undefined || convId == undefined) {
