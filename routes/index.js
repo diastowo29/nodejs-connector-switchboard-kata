@@ -481,7 +481,7 @@ function switchboardPassControl(appId, convId, solved, firstMsgId, userId = null
   }
 
   Object.entries(ticket_fields).map(f => {
-    passControlBody.metadata[[`dataCapture.ticketField.${f[0]}`]] = f[1] ?? 0
+    passControlBody.metadata[[`dataCapture.ticketField.${f[0]}`]] = `"${f[1]}"` ?? 0
   })
   passControlBody.metadata[['first_message_id']] = firstMsgId
 
