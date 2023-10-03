@@ -14,7 +14,7 @@ var basicAuth = defaultClient.authentications['basicAuth'];
 var SMOOCH_KEY_ID = process.env.SMOOCH_KEY_ID || "xxx";
 var SMOOCH_KEY_SECRET = process.env.SMOOCH_KEY_SECRET || "xxx";
 var BYPASS_ZD = process.env.BYPASS_ZD || "false";
-var CHANNEL_ACTIVE_ACCOUNT = process.env.WA_ACTIVE_ACCOUNT || "62d7a492294f2700f0e3b08c";
+var EXCLUDED_INTG_ID = process.env.WA_ACTIVE_ACCOUNT || "62d7a492294f2700f0e3b08c";
 var BOT_ALIAS = process.env.BOT_ALIAS || "Bita";
 var BOT_AUTH = process.env.BOT_AUTH || 'xxx';
 var BOT_PROD_AUTH = process.env.BOT_PROD_AUTH || 'xxx';
@@ -91,7 +91,7 @@ router.post('/webhook', function (req, res, next) {
       // taro custom payload untuk tambah tipe user (premium bot a, non bot b)
       if ('activeSwitchboardIntegration' in event.payload.conversation) {
         var convSwitchboardName = event.payload.conversation.activeSwitchboardIntegration.name;
-        if (CHANNEL_ACTIVE_ACCOUNT.includes(convIntegrationId)) {
+        if (!EXCLUDED_INTG_ID.includes(convIntegrationId)) {
           console.log(`Inbound SMOOCH User: ${event.payload.message.author.displayName} SW: ${convSwitchboardName} USER_ID: ${event.payload.message.author.userId}_${appId}_${convId}`)
           // var displayName = event.payload.message.author.displayName;
           if (convSwitchboardName == 'bot') {
