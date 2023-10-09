@@ -95,7 +95,7 @@ router.post('/webhook', function (req, res, next) {
           console.log(`Inbound SMOOCH User: ${event.payload.message.author.displayName} SW: ${convSwitchboardName} USER_ID: ${event.payload.message.author.userId}_${appId}_${convId}`)
           // var displayName = event.payload.message.author.displayName;
           if (convSwitchboardName == 'bot') {
-            if (BYPASS_ZD == 'true' ) {
+            if (BYPASS_ZD == true ) {
               getClevel(false, {}, event.payload.message.author.userId, appId, convId, event.payload.message.id, false, {tags:''})
             } else {
               if (event.payload.message.author.type == "user") {
