@@ -96,7 +96,7 @@ router.post('/webhook', function (req, res, next) {
           // var displayName = event.payload.message.author.displayName;
           if (convSwitchboardName == 'bot') {
             if (BYPASS_ZD == 'true' ) {
-              getClevel('false', null, event.payload.message.author.userId, appId, convId, event.payload.message.id, false, {tags:''})
+              getClevel(false, null, event.payload.message.author.userId, appId, convId, event.payload.message.id, false, {tags:''})
             } else {
               if (event.payload.message.author.type == "user") {
                 var messagePayload = event.payload.message;
@@ -109,7 +109,7 @@ router.post('/webhook', function (req, res, next) {
           if (convSwitchboardName == 'bot') {
             if (convChannel != 'officehours') { // 'officehours' means automated messages
               console.log('-- unregistered account, pass to zd imidiately -- ')
-              getClevel('false', null, event.payload.message.author.userId, appId, convId, event.payload.message.id, false, {tags:''})
+              getClevel(false, null, event.payload.message.author.userId, appId, convId, event.payload.message.id, false, {tags:''})
             }
           }
         }
