@@ -95,7 +95,7 @@ router.post('/webhook', function (req, res, next) {
           console.log(`Inbound SMOOCH User: ${event.payload.message.author.displayName} SW: ${convSwitchboardName} USER_ID: ${event.payload.message.author.userId}_${appId}_${convId}`)
           // var displayName = event.payload.message.author.displayName;
           if (convSwitchboardName == 'bot') {
-            if (BYPASS_ZD == true ) {
+            if (BYPASS_ZD == 'true' ) {
               getClevel(false, {}, event.payload.message.author.userId, appId, convId, event.payload.message.id, false, {tags:''})
             } else {
               if (event.payload.message.author.type == "user") {
@@ -217,6 +217,7 @@ function sendToBot(botPayloadJson, username) {
     console.log('Sent to BOT: %s', response.status);
     goLogging('info', P_SEND_TO_BOT, botPayloadJson.sender, botPayloadJson, BOT_CLIENT, username)
   }).catch(function(err){
+    console.log(err)
     switchboardPassControl(botPayloadJson.sender.split('_')[1], botPayloadJson.sender.split('_')[2], false, null, botPayloadJson.sender.split('_')[0], null, '', false)
     goLogging('error', P_SEND_TO_BOT, botPayloadJson.sender, err.response, BOT_CLIENT, username)
   });
