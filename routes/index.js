@@ -151,6 +151,7 @@ router.post('/conversation/reply/', async function (req, res, next) {
     });
   } else {
     let i = 0;
+    console.log(JSON.stringify(req.body))
     for (const message of req.body.messages) {
         if (message.type == 'text') {
           var smoochResponse = await sendToSmooch(userId, appId, convId, message.content);
