@@ -69,6 +69,7 @@ router.get('/webhook', function (req, res, next) {
 
 router.post('/webhook', function (req, res, next) {
   var appId = req.body.app.id;
+  console.log(JSON.stringify(req.body))
   req.body.events.forEach(event => {
     if (event.type != 'conversation:read') {
       var convChannel = event.payload.message.source.type;
