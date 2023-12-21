@@ -82,7 +82,8 @@ router.post('/webhook', function (req, res, next) {
           // var displayName = event.payload.message.author.displayName;
           if (convSwitchboardName == 'bot') {
             if (BYPASS_ZD == 'true' ) {
-              switchboardPassControl(appId, convId, event.payload.message.id);
+              let jump = false;
+              switchboardPassControl(appId, convId, event.payload.message.id, jump);
             } else {
               if (event.payload.message.author.type == "user") {
                 var messagePayload = event.payload.message;
@@ -96,7 +97,8 @@ router.post('/webhook', function (req, res, next) {
           if (convSwitchboardName == 'bot') {
             if (convChannel != 'officehours') { // 'officehours' means automated messages
               console.log('-- unregistered account, pass to zd imidiately -- ')
-              switchboardPassControl(appId, convId, event.payload.message.id);
+    let jump = false;
+              switchboardPassControl(appId, convId, event.payload.message.id, jump);
             }
           }
         }
@@ -107,7 +109,14 @@ router.post('/webhook', function (req, res, next) {
 })
 
 router.post('/prewebhook', function(req, res, next) {
-  var appId = req.body.app.id;
+  let userId = req.body.userId.split('_')[0];
+  let appId = req.body.userId.split('_')[1];
+  var convId = req.body.userId.split('_')[2];
+  req.body.events.forEach(event => {
+    const firstMsgId = event.payload.message.id
+    let jump = false;
+    switchboardPassControl(appId, convId, firstMsgId, jump);
+  })
   res.status(200).send({});
 })
 
@@ -197,7 +206,8 @@ router.post('/conversation/handover', function (req, res, next) {
     let appId = req.body.userId.split('_')[1];
     var convId = req.body.userId.split('_')[2];
     const firstMsgId = req.body.first_message_id
-    switchboardPassControl(appId, convId, firstMsgId);
+    let jump = false;
+    switchboardPassControl(appId, convId, firstMsgId, jump);
     res.status(200).send({  
       status: 'ok'
     })
@@ -459,12 +469,12 @@ function finalSendtoSmooch(userId, appId, convId, messagePost) {
   }
 }
 
-function switchboardPassControl(appId, convId, firstMsgId) {
+function switchboardPassControl(appId, convId, firstMsgId, jump) {
   // var solvedTag = ``;
  
   var apiInstance = new SunshineConversationsClient.SwitchboardActionsApi();
   var passControlBody = new SunshineConversationsClient.PassControlBody();
-  passControlBody.switchboardIntegration = 'next';
+  passControlBody.switchboardIntegration = (jump) ? 'zd-agentWorkspace' : 'next';
   passControlBody.metadata = {
     // ['dataCapture.systemField.tags']: solvedTag,
     ['first_message_id']: firstMsgId,
