@@ -71,7 +71,7 @@ router.post('/webhook', function (req, res, next) {
   var appId = req.body.app.id;
   console.log(JSON.stringify(req.body))
   req.body.events.forEach(event => {
-    if (event.type != 'conversation:read') {
+    if (event.type == 'conversation:message') {
       var convChannel = event.payload.message.source.type;
       var convIntegrationId = event.payload.message.source.integrationId;
       var convId = event.payload.conversation.id;
@@ -103,6 +103,8 @@ router.post('/webhook', function (req, res, next) {
           }
         }
       }
+    } else {
+      console.log(event.type);
     }
   });
   res.status(200).send({});
@@ -118,7 +120,7 @@ router.post('/prewebhook', function(req, res, next) {
     var convId = event.payload.conversation.id;
     const firstMsgId = event.payload.message.id
     let jump = false;
-    switchboardPassControl(appId, convId, firstMsgId, jump);
+    switchboardOfferControl(appId, convId, firstMsgId, jump);
   })
   res.status(200).send({});
 })
