@@ -3,64 +3,100 @@ var router = express.Router();
 var SunshineConversationsClient = require('sunshine-conversations-client');
 var defaultClient = SunshineConversationsClient.ApiClient.instance;
 const axios = require('axios');
+const payGen = require("./config/payload.js")
+const axiosRetry = require('axios-retry');
+// import qs from 'qs';
+
+// const { chatlog_model } = require('../sequelize')
 
 var basicAuth = defaultClient.authentications['basicAuth'];
 
-var SMOOCH_KEY_ID = process.env.SMOOCH_KEY_ID;
-var SMOOCH_KEY_SECRET = process.env.SMOOCH_KEY_SECRET;
-var BYPASS_ZD  = process.env.BYPASS_ZD;
-var WA_ACTIVE_ACCOUNT = process.env.WA_ACTIVE_ACCOUNT;
-var BOT_ALIAS = process.env.BOT_ALIAS;
+var SMOOCH_KEY_ID = process.env.SMOOCH_KEY_ID || "xxx";
+var SMOOCH_KEY_SECRET = process.env.SMOOCH_KEY_SECRET || "xxx";
+var BYPASS_ZD = process.env.BYPASS_ZD || "false";
+var CHANNEL_ACTIVE_ACCOUNT = process.env.WA_ACTIVE_ACCOUNT || "62d7a492294f2700f0e3b08c";
+var BOT_ALIAS = process.env.BOT_ALIAS || "Bita";
+var BOT_AUTH = process.env.BOT_AUTH || 'xxx';
+var BOT_PROD_AUTH = process.env.BOT_PROD_AUTH || 'xxx';
+var BOT_TOKEN = process.env.BOT_TOKEN || "xxx";
+var inProd = process.env.LOG_DISABLED || "false";
+
+// var getTokenEndpoint = process.env.TOKEN_API || "xxx"
+// var getCustomerEndpoint = process.env.CUSTOMER_API || "xxx"
+// var clientSecret = process.env.CLIENT_SECRET || "xxx";
+// var clientId = process.env.CLIENT_ID || "xxx";
+// var headerToken = process.env.HEADER_TOKEN || "xxx";
+
+var BOT_CLIENT = 'PDI-ROKITV'
+
+var LOG_TOKEN = '';
 
 basicAuth.username = SMOOCH_KEY_ID;
 basicAuth.password = SMOOCH_KEY_SECRET;
 
-var KATABOT_TOKEN = process.env.BOT_TOKEN;
-let KATABOT_URL = 'https://kanal.kata.ai/receive_message/' + KATABOT_TOKEN;
+var P_SEND_TO_SMOOCH = 'sendToSmooch'
+var P_SEND_TO_BOT = 'sendToBot'
+var P_HANDOVER = 'handover'
 
-var gotoSmooch = false;
+let BOT_URL = 'https://kanal.kata.ai/receive_message/' + BOT_TOKEN;
 
-router.get('/webhook', function(req, res, next) {
+var gotoSmooch = true;
+
+var winston = require('winston');
+var { Loggly } = require('winston-loggly-bulk');
+
+winston.add(new Loggly({
+  token: "25cbd41e-e0a1-4289-babf-762a2e6967b6",
+  subdomain: "diastowo",
+  tags: ["sw-dev"],
+  json: true
+}));
+
+axiosRetry(axios, {
+  retries: 3,
+  retryCondition: (e) => {
+    return (
+      axiosRetry.isNetworkOrIdempotentRequestError(e) ||
+      e.response.status != 200
+    );
+  }
+})
+
+router.get('/webhook', function (req, res, next) {
+  goLogging('info', P_SEND_TO_SMOOCH, 'test-logging', 'test-logging', BOT_CLIENT)
   res.status(200).send({});
 })
 
-router.post('/webhook', function(req, res, next) {
+router.post('/webhook', function (req, res, next) {
   var appId = req.body.app.id;
-  // console.log(JSON.stringify(req.body))
+  console.log(JSON.stringify(req.body))
   req.body.events.forEach(event => {
     if (event.type != 'conversation:read') {
       var convChannel = event.payload.message.source.type;
       var convIntegrationId = event.payload.message.source.integrationId;
-      if (convChannel == 'whatsapp') {
-        if ('activeSwitchboardIntegration' in event.payload.conversation) {
-          console.log('== inbound message type: ' + convChannel + ' sw name: ' + event.payload.conversation.activeSwitchboardIntegration.name 
-                      + ' integrationId: ' + convIntegrationId + ' active wa account: ' + WA_ACTIVE_ACCOUNT.includes(convIntegrationId) + ' author: ' + event.payload.message.author.displayName)
-          var convId = event.payload.conversation.id;
-          var convSwitchboardName = event.payload.conversation.activeSwitchboardIntegration.name;
-          if (WA_ACTIVE_ACCOUNT.includes(convIntegrationId)) {
-            console.log(JSON.stringify(req.body))
-            console.log('WEBHOOK from Smooch');
-            console.log('User: ' + event.payload.message.author.displayName);
-            console.log('Switchboard: ' + convSwitchboardName)
-            if (convSwitchboardName == 'bot') {
-              if (BYPASS_ZD) {
-                console.log('=== PASS CONTROL TO ZENDESK ===')
-                switchboardPassControl(appId, convId);
-              } else {
-                  if (event.payload.message.author.type == "user") {
-                    var messagePayload = event.payload.message;
-                    var userIdForBot = messagePayload.author.userId + ':' + appId + ':' + convId;
-                    console.log('message to bot: ' + messagePayload.content.text);
-                    // if (messagePayload.content.type = 'text') {
-                    //   sendToBot(userIdForBot, messagePayload.content.text);
-                    // }
-                  }
+      var convId = event.payload.conversation.id;
+      if ('activeSwitchboardIntegration' in event.payload.conversation) {
+        var convSwitchboardName = event.payload.conversation.activeSwitchboardIntegration.name;
+        if (CHANNEL_ACTIVE_ACCOUNT.includes(convIntegrationId)) {
+          console.log(`Inbound SMOOCH User: ${event.payload.message.author.displayName} SW: ${convSwitchboardName} USER_ID: ${event.payload.message.author.userId}_${appId}_${convId}`)
+          // var displayName = event.payload.message.author.displayName;
+          if (convSwitchboardName == 'bot') {
+            if (BYPASS_ZD == 'true' ) {
+              switchboardPassControl(appId, convId, event.payload.message.id);
+            } else {
+              if (event.payload.message.author.type == "user") {
+                var messagePayload = event.payload.message;
+                var userIdForBot = messagePayload.author.userId + '_' + appId + '_' + convId;
+                sendToBot(payGen.doGenerateBotPayload(userIdForBot, messagePayload), event.payload.message.author.displayName)
+                // console.log(JSON.stringify(payGen.doGenerateBotPayload(userIdForBot, messagePayload)))
               }
             }
-          } else {
-            if (convSwitchboardName == 'bot') {
+          }
+        } else if ((convChannel != 'api:conversations') && (convChannel != 'zd:agentWorkspace')) {
+          if (convSwitchboardName == 'bot') {
+            if (convChannel != 'officehours') { // 'officehours' means automated messages
               console.log('-- unregistered account, pass to zd imidiately -- ')
-              switchboardPassControl(appId, convId);
+              switchboardPassControl(appId, convId, event.payload.message.id);
             }
           }
         }
@@ -82,105 +118,213 @@ router.post('/hook-from-kata', function(req, res, next) {
   var convId = req.body.userId.split(':')[2];
   // var passToZd = false;
 
-  var response;
-  req.body.messages.forEach(message => {
-    if (message.type == 'text') {
-      response = sendToSmooch(appId, convId, message.content);
-    } else {
-      if (message.payload.template_type == 'carousel') {
-        response = sendCarouseltoSmooch(appId, convId, message.payload);
-      } else if (message.payload.template_type == 'image') {
-        response = sendImagetoSmooch(appId, convId, message.payload);
-      } else if (message.payload.template_type == 'location') {
-        response = sendLocationtoSmooch(appId, convId, message.payload);
-      } else if (message.payload.template_type == 'button') {
-        console.log('not suppported on Smooch')
-        response = {
-          error: 'template_type: \'button\' not supported on Smooch'
-        }
-      } else {
-        response = sendFiletoSmooch(appId, convId, message.payload);
-      }
-    }
+  axios(payGen.doGenerateAxiosRequest('POST', BOT_URL, BOT_AUTH, jsonPayload)).then(function (response) {
+    console.log('Sent to BOT: %s', response.status);
+    // console.log(response)
+    botResponse = response.data;
+    res.status(200).send({ response: botResponse, payload: jsonPayload });
+  }).catch(function(err){
+    console.log(err)
+    res.status(400).send({error: err, payload: jsonPayload})
   });
-  res.status(200).send(response);
-});
-
-router.post('/handover', function(req, res, next) {
-  let userId = req.body.userId.split(':')[0];
-  let appId = req.body.userId.split(':')[1];
-  var convId = req.body.userId.split(':')[2];
-  switchboardPassControl(appId, convId);
-  res.status(200).send({
-    status: 'ok'
-  })
 })
 
-function sendToBot (userId, chatContent) {
-  console.log('Chat form %s will be sent to BOT', userId);
-  axios({
-      method: 'POST',
-      url: KATABOT_URL,
-      data: {
-          userId: userId,
-          messages: [{
-              type: "text",
-              content: chatContent
-          }]
-      }
-  }).then(function (response) {
-      console.log('Sent to BOT: %s', response.status);
+router.post('/conversation/reply/', async function (req, res, next) {
+  let userId = req.body.userId.split('_')[0];
+  let appId = req.body.userId.split('_')[1];
+  var convId = req.body.userId.split('_')[2];
+  var response;
+
+  goLogging('info', P_SEND_TO_SMOOCH, req.body.userId, req.body, BOT_CLIENT, "")
+  console.log(`Inbound BOT USER_ID: ${req.body.userId}`)
+  if (userId == undefined || appId == undefined || convId == undefined) {
+    res.status(422).send({
+      error: 'invalid userId format'
+    });
+  } else {
+    let i = 0;
+    for (const message of req.body.messages) {
+        if (message.type == 'text') {
+          var smoochResponse = await sendToSmooch(userId, appId, convId, message.content);
+          response = smoochResponse;
+        } else {
+          if (message.payload.template_type == 'carousel') {
+            response = await sendCarouseltoSmooch(userId, appId, convId, message.payload);
+          } else if (message.payload.template_type == 'image') {
+            response = await sendImagetoSmooch(userId, appId, convId, message.payload);
+          } else if (message.payload.template_type == 'location') {
+            response = await sendLocationtoSmooch(userId, appId, convId, message.payload);
+          } else if (message.payload.template_type == 'button') {
+            console.log('not suppported on Smooch')
+          } else if (message.payload.template_type == 'text') {
+            response = await sendQuickReplySmooch(userId, appId, convId, message.payload);
+          } else if (message.payload.template_type == 'list_reply') {
+            response = await sendQuickReplySmooch(userId, appId, convId, message.payload);
+          } else {
+            response = await sendFiletoSmooch(userId, appId, convId, message.payload);
+          }
+        }
+      i++;
+    }
+    var statusCode;
+    console.log(JSON.stringify(response))
+    if ('error' in response) {
+      statusCode = 422
+      response = response.error
+    } else {
+      statusCode = 200
+    }
+    res.status(statusCode).send({response});
+  }
+
+});
+
+router.post('/conversation/handover', function (req, res, next) {
+  if (req.body.userId.split('_').length < 3) {
+    goLogging('error', P_HANDOVER, req.body.userId, req.body, BOT_CLIENT, '')
+    res.status(400).send({
+      error: 'userId: not registered/wrong pattern'
+    })
+  } else {
+    var solvedByBot = false;
+    var ticket_fields = req.body.ticket_fields;
+    var answerByBot = (req.body.answered_by_bot) ? req.body.answered_by_bot : false;
+    solvedByBot = req.body.solved_by_bot;
+    goLogging('info', P_HANDOVER, req.body.userId, req.body, BOT_CLIENT, "")
+    // console.log('info', P_HANDOVER, req.body.userId, req.body, BOT_CLIENT)
+    console.log(`Handover USER_ID: ${req.body.userId}`)
+    let userId = req.body.userId.split('_')[0];
+    let appId = req.body.userId.split('_')[1];
+    var convId = req.body.userId.split('_')[2];
+    const firstMsgId = req.body.first_message_id
+    switchboardPassControl(appId, convId, firstMsgId);
+    res.status(200).send({  
+      status: 'ok'
+    })
+  }
+})
+
+function sendToBot(botPayloadJson, username) {
+  axios(payGen.doGenerateAxiosRequest('POST', BOT_URL, botPayloadJson)).then(function (response) {
+    console.log('Sent to BOT: %s', response.status);
+    goLogging('info', P_SEND_TO_BOT, botPayloadJson.sender, botPayloadJson, BOT_CLIENT, username)
+  }).catch(function(err){
+    console.log(err)
+    // switchboardPassControl(botPayloadJson.sender.split('_')[1], botPayloadJson.sender.split('_')[2], null)
+    goLogging('error', P_SEND_TO_BOT, botPayloadJson.sender, err.response, BOT_CLIENT, username)
   });
 }
 
-function sendToSmooch (appId, convId, messageContent) {
-  // var apiInstance = new SunshineConversationsClient.MessagesApi();
+async function sendQuickReplySmooch (userId, appId, convId, messagePayload) {
+  // console.log('sendquick to smooch')
   var messagePost = new SunshineConversationsClient.MessagePost();
   messagePost.author = {
-    type: 'business',
-    displayName: BOT_ALIAS
+    type: 'business'
+    // displayName: BOT_ALIAS
+  }
+  messagePost.content = {
+    type: 'text',
+    text: 'quickreply'
+  }
+
+  var actionObject = {};
+  var interactiveType = '';
+  var bodyText = '';
+  if (messagePayload.template_type == 'text') {
+    var listofButtons = []
+    interactiveType = 'button';
+    messagePayload.items.quickreply.forEach(quickreply => {
+      listofButtons.push({
+        type: 'reply',
+        reply : {
+          id: quickreply.label,
+          title: quickreply.text
+        }
+      })
+    });
+    
+    bodyText = messagePayload.items.text
+    actionObject = {
+      buttons: listofButtons
+    }
+
+  } else if (messagePayload.template_type == 'list_reply') {
+    var listofSections = [];
+    var sectionRows = [];
+    messagePayload.items.action.sections.forEach(section => {
+      section.rows.forEach(row => {
+        sectionRows.push({
+          id: row.id,
+          title: row.title,
+          description: row.description
+        })
+      });
+      listofSections.push({
+        title: section.title,
+        rows: sectionRows
+      })
+    });
+    bodyText = messagePayload.items.body.text
+
+    interactiveType = 'list';
+    actionObject = {
+      button: messagePayload.items.action.button,
+      sections: listofSections 
+    }
+  }
+
+  var interactiveObject = {
+    type: interactiveType,
+    body: {
+        text: bodyText
+    },
+    action: actionObject
+  }
+
+  messagePost.override = {
+    whatsapp: {
+      payload: {
+        type: "interactive",
+        interactive: interactiveObject
+      }
+    }
+  }
+
+  console.log(JSON.stringify(messagePost))
+  return await finalSendtoSmooch(userId, appId, convId, messagePost);
+}
+
+async function sendToSmooch(userId, appId, convId, messageContent) {
+  var messagePost = new SunshineConversationsClient.MessagePost();
+  messagePost.author = {
+    type: 'business'
+    // displayName: BOT_ALIAS
   }
   messagePost.content = {
     type: 'text',
     text: messageContent
   }
-
-  // apiInstance.postMessage(appId, convId, messagePost).then(function(data) {
-  //   console.log('API POST Message called successfully. Returned data: ' + data);
-  // }, function(error) {
-  //   console.error(error);
-  // });
-  finalSendtoSmooch(appId, convId, messagePost);
-  return messagePost;
+  return await finalSendtoSmooch(userId, appId, convId, messagePost);
 }
 
-function sendImagetoSmooch (appId, convId, messagePayload) {
-  // var apiInstance = new SunshineConversationsClient.MessagesApi();
+async function sendImagetoSmooch(userId, appId, convId, messagePayload) {
   var messagePost = new SunshineConversationsClient.MessagePost();
   messagePost.author = {
-    type: 'business',
-    displayName: BOT_ALIAS
+    type: 'business'
+    // displayName: BOT_ALIAS
   }
   messagePost.content = {
     type: 'image',
     mediaUrl: messagePayload.items.originalContentUrl
   }
-
-  // apiInstance.postMessage(appId, convId, messagePost).then(function(data) {
-  //   console.log('API POST Message called successfully. Returned data: ' + data);
-  // }, function(error) {
-  //   console.error(error);
-  // });
-  finalSendtoSmooch(appId, convId, messagePost);
-  return messagePost;
+  return await finalSendtoSmooch(userId, appId, convId, messagePost);
 }
 
-function sendLocationtoSmooch (appId, convId, messagePayload) {
-  // var apiInstance = new SunshineConversationsClient.MessagesApi();
+function sendLocationtoSmooch(userId, appId, convId, messagePayload) {
   var messagePost = new SunshineConversationsClient.MessagePost();
   messagePost.author = {
-    type: 'business',
-    displayName: BOT_ALIAS
+    type: 'business'
+    // displayName: BOT_ALIAS
   }
   messagePost.content = {
     type: 'location',
@@ -193,39 +337,62 @@ function sendLocationtoSmooch (appId, convId, messagePayload) {
       name: messagePayload.items.title
     }
   }
-
-  // apiInstance.postMessage(appId, convId, messagePost).then(function(data) {
-  //   console.log('API POST Message called successfully. Returned data: ' + data);
-  // }, function(error) {
-  //   console.error(error);
-  // });
-  finalSendtoSmooch(appId, convId, messagePost);
+  finalSendtoSmooch(userId, appId, convId, messagePost);
   return messagePost;
 }
 
 
-function sendFiletoSmooch (appId, convId, messagePayload) {
-  // var apiInstance = new SunshineConversationsClient.MessagesApi();
+function sendFiletoSmooch(userId, appId, convId, messagePayload) {
   var messagePost = new SunshineConversationsClient.MessagePost();
   messagePost.author = {
-    type: 'business',
-    displayName: BOT_ALIAS
+    type: 'business'
+    // displayName: BOT_ALIAS
   }
   messagePost.content = {
     type: 'file',
     mediaUrl: messagePayload.items.originalContentUrl
   }
-
-  // apiInstance.postMessage(appId, convId, messagePost).then(function(data) {
-  //   console.log('API POST Message called successfully. Returned data: ' + data);
-  // }, function(error) {
-  //   console.error(error);
-  // });
-  finalSendtoSmooch(appId, convId, messagePost);
+  finalSendtoSmooch(userId, appId, convId, messagePost);
   return messagePost;
 }
 
-function sendCarouseltoSmooch (appId, convId, messagePayload) {
+function hcSendCarouseltoSmooch(userId, appId, convId, messagePayload) {
+  var messagePost = new SunshineConversationsClient.MessagePost();
+  var carouselItems = [
+    {
+      title: "tacos",
+      description: "Get your tacos today",
+      mediaUrl: "https://www.eatingonadime.com/wp-content/uploads/2020/10/carne-asada-1-square.jpg",
+      altText: "giant taco",
+      size: "compact",
+      actions: [{
+        text: "Select",
+        type: "postback",
+        payload: "TACOS"
+      },{
+        text: "More info",
+        type: "link",
+        uri: "https://google.com"
+      }]
+    }
+  ];
+
+  var carouselPayload = {
+    type: 'carousel',
+    items: carouselItems
+  };
+
+  messagePost.author = {
+    type: 'business'
+    // displayName: BOT_ALIAS
+  }
+  messagePost.content = carouselPayload;
+
+  finalSendtoSmooch(userId, appId, convId, messagePost);
+  return messagePost;
+}
+
+function sendCarouseltoSmooch(userId, appId, convId, messagePayload) {
   // var apiInstance = new SunshineConversationsClient.MessagesApi();
   var messagePost = new SunshineConversationsClient.MessagePost();
   var carouselItems = [];
@@ -243,7 +410,7 @@ function sendCarouseltoSmooch (appId, convId, messagePayload) {
         newCarouselActions.push({
           text: carouselAction.label,
           type: 'postback',
-          payload: carouselAction.payload[payloadKey[0]]
+          payload: carouselAction.payload[payloadKey[0]] //always get the first payload
         })
       }
     });
@@ -260,45 +427,68 @@ function sendCarouseltoSmooch (appId, convId, messagePayload) {
   };
 
   messagePost.author = {
-    type: 'business',
-    displayName: BOT_ALIAS
+    type: 'business'
+    // displayName: BOT_ALIAS
   }
   messagePost.content = carouselPayload;
-  
-  // apiInstance.postMessage(appId, convId, messagePost).then(function(data) {
-  //   console.log('API POST Message called successfully. Returned data: ' + data);
-  // }, function(error) {
-  //   console.error(error);
-  // });
-  finalSendtoSmooch(appId, convId, messagePost);
+
+  finalSendtoSmooch(userId, appId, convId, messagePost);
   return messagePost;
 }
 
-function finalSendtoSmooch (appId, convId, messagePost) {
+function finalSendtoSmooch(userId, appId, convId, messagePost) {
+
   if (gotoSmooch) {
+    goLogging('info', P_SEND_TO_SMOOCH, userId + '_' + appId + '_' + convId, messagePost, BOT_CLIENT, "")
     var apiInstance = new SunshineConversationsClient.MessagesApi();
-    
-    apiInstance.postMessage(appId, convId, messagePost).then(function(data) {
-      console.log('API POST Message called successfully. Returned data: ' + data);
-    }, function(error) {
-      console.error('error sending to smooch: ' + error);
+
+    try {
+      return apiInstance.postMessage(appId, convId, messagePost).then(function (data) {
+        return data
+      }, function (error) {
+        goLogging('error', P_SEND_TO_SMOOCH, userId + '_' + appId + '_' + convId, error.body, BOT_CLIENT, "")
+        return {error: error.body};
     });
+    } catch (err) {
+      return {error: err};
+    }
   } else {
+    // winston.log('info', messagePost);
+    goLogging('info', P_SEND_TO_SMOOCH, userId + '_' + appId + '_' + convId, messagePost, BOT_CLIENT, "")
     console.log(JSON.stringify(messagePost))
   }
 }
 
-function switchboardPassControl (appId, convId) {
+function switchboardPassControl(appId, convId, firstMsgId) {
+  // var solvedTag = ``;
+ 
   var apiInstance = new SunshineConversationsClient.SwitchboardActionsApi();
   var passControlBody = new SunshineConversationsClient.PassControlBody();
   passControlBody.switchboardIntegration = 'next';
+  passControlBody.metadata = {
+    // ['dataCapture.systemField.tags']: solvedTag,
+    ['first_message_id']: firstMsgId,
+  }
 
-  console.log('passing control chat')
-  apiInstance.passControl(appId, convId, passControlBody).then(function(data) {
+  console.log('passing control chat', passControlBody)
+  apiInstance.passControl(appId, convId, passControlBody).then(function (data) {
     console.log('API Pass Control called successfully. Returned data: ' + data);
-  }, function(error) {
+  }, function (error) {
     console.log(error)
   });
+}
+
+function goLogging(status, process, to, message, client, name) {
+  if (inProd == 'false') {
+    winston.log(status, {
+      process: process,
+      status: status,
+      to: to,
+      username: name,
+      message: message,
+      client: client
+    });
+  }
 }
 
 module.exports = router;

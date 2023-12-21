@@ -7,12 +7,18 @@
   },
   "dependencies": {
     "axios": "^0.21.1",
+    "axios-retry": "^3.3.1",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
     "express": "~4.16.1",
     "http-errors": "~1.6.3",
+    "loggly": "^1.1.1",
     "morgan": "~1.9.1",
+    "pg": "^8.7.1",
     "pug": "2.0.0-beta11",
-    "sunshine-conversations-client": "^9.4.3"
+    "qs": "^6.11.0",
+    "sequelize": "^6.13.0",
+    "sunshine-conversations-client": "^9.4.3",
+    "winston-loggly-bulk": "^3.2.1"
   }
 }
