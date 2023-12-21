@@ -109,10 +109,13 @@ router.post('/webhook', function (req, res, next) {
 })
 
 router.post('/prewebhook', function(req, res, next) {
-  let userId = req.body.userId.split('_')[0];
-  let appId = req.body.userId.split('_')[1];
-  var convId = req.body.userId.split('_')[2];
+  // let userId = req.body.userId.split('_')[0];
+  // let appId = req.body.userId.split('_')[1];
+  // var convId = req.body.userId.split('_')[2];
+  var appId = req.body.app.id;
+
   req.body.events.forEach(event => {
+    var convId = event.payload.conversation.id;
     const firstMsgId = event.payload.message.id
     let jump = false;
     switchboardPassControl(appId, convId, firstMsgId, jump);
