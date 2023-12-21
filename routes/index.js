@@ -70,6 +70,11 @@ router.post('/webhook', function(req, res, next) {
   res.status(200).send({});
 })
 
+router.post('/prewebhook', function(req, res, next) {
+  var appId = req.body.app.id;
+  res.status(200).send({});
+})
+
 router.post('/hook-from-kata', function(req, res, next) {
   console.log('HOOK-FROM-KATA');
   let userId = req.body.userId.split(':')[0];
