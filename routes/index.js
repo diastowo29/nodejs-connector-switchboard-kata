@@ -76,11 +76,11 @@ router.post('/webhook', function (req, res, next) {
       var convIntegrationId = event.payload.message.source.integrationId;
       var convId = event.payload.conversation.id;
       if ('activeSwitchboardIntegration' in event.payload.conversation) {
-        var convSwitchboardName = event.payload.conversation.activeSwitchboardIntegration.name;
+        var convSwitchboardName = event.payload.conversation.activeSwitchboardIntegration.integrationType;
         if (CHANNEL_ACTIVE_ACCOUNT.includes(convIntegrationId)) {
           console.log(`Inbound SMOOCH User: ${event.payload.message.author.displayName} SW: ${convSwitchboardName} USER_ID: ${event.payload.message.author.userId}_${appId}_${convId}`)
           // var displayName = event.payload.message.author.displayName;
-          if (convSwitchboardName == 'bot') {
+          if (convSwitchboardName == 'custom') {
             if (BYPASS_ZD == 'true' ) {
               let jump = false;
               switchboardPassControl(appId, convId, event.payload.message.id, jump);
