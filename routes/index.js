@@ -118,7 +118,7 @@ router.post('/prewebhook', function(req, res, next) {
     var convId = event.payload.conversation.id;
     const firstMsgId = event.payload.message.id
     let jump = false;
-    switchboardOfferControl(appId, convId, firstMsgId, jump);
+    switchboardPassControl(appId, convId, firstMsgId, jump);
   })
   res.status(200).send({});
 })
