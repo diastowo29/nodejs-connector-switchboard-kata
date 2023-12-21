@@ -118,7 +118,7 @@ router.post('/prewebhook', function(req, res, next) {
     var convId = event.payload.conversation.id;
     const firstMsgId = event.payload.message.id
     let jump = false;
-    switchboardPassControl(appId, convId, firstMsgId, jump);
+    switchboardOfferControl(appId, convId, firstMsgId, jump);
   })
   res.status(200).send({});
 })
@@ -470,6 +470,25 @@ function finalSendtoSmooch(userId, appId, convId, messagePost) {
     goLogging('info', P_SEND_TO_SMOOCH, userId + '_' + appId + '_' + convId, messagePost, BOT_CLIENT, "")
     console.log(JSON.stringify(messagePost))
   }
+}
+
+function switchboardOfferControl(appId, convId, firstMsgId, jump) {
+  // var solvedTag = ``;
+ 
+  var apiInstance = new SunshineConversationsClient.SwitchboardActionsApi();
+  var passControlBody = new SunshineConversationsClient.PassControlBody();
+  passControlBody.switchboardIntegration = (jump) ? 'zd-agentWorkspace' : 'next';
+  passControlBody.metadata = {
+    // ['dataCapture.systemField.tags']: solvedTag,
+    ['first_message_id']: firstMsgId,
+  }
+
+  console.log('passing control chat', passControlBody)
+  apiInstance.offerControl(appId, convId, passControlBody).then(function (data) {
+    console.log('API Pass Control called successfully. Returned data: ' + data);
+  }, function (error) {
+    console.log(error)
+  });
 }
 
 function switchboardPassControl(appId, convId, firstMsgId, jump) {
