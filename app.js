@@ -1,16 +1,16 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+const createError = require('http-errors');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
 // const Sequelize = require('sequelize')
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-var apiRouter = require('./routes/api');
-var kataHelperRouter = require('./routes/kata-helper');
+const indexRouter = require('./routes/index');
+const usersRouter = require('./routes/users');
+const apiRouter = require('./routes/api');
+const kataHelperRouter = require('./routes/kata-helper');
 
-var app = express();
+const app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -28,12 +28,12 @@ app.use('/api/v1', apiRouter);
 app.use('/kata', kataHelperRouter);
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function(_req, _res, _next) {
   next(createError(404));
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function(err, req, res, _next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
