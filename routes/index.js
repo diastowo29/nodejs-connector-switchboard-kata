@@ -146,7 +146,7 @@ router.post('/prewebhook', function (req, res, _next) {
                                 jump = true;
                             }
                         }
-                        if (GAGE_RULE) {
+                        if (GAGE_RULE == 'true') {
                             if (parseInt(phoneNumber) % 2 == 1) {
                               jump = true;
                             }
