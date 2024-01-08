@@ -17,9 +17,7 @@ const SMOOCH_KEY_SECRET =/* process.env.SMOOCH_KEY_SECRET || */
 const BYPASS_ZD = process.env.BYPASS_ZD || "false";
 const CHANNEL_ACTIVE_ACCOUNT =/* process.env.WA_ACTIVE_ACCOUNT ||  */
 "655495d91e675048908d8d64";
-const BOT_ALIAS = process.env.BOT_ALIAS || "Bita";
 const BOT_AUTH = process.env.BOT_AUTH || 'xxx';
-const BOT_PROD_AUTH = process.env.BOT_PROD_AUTH || 'xxx';
 const BOT_TOKEN = process.env.BOT_TOKEN || "xxx";
 const inProd = process.env.LOG_DISABLED || "false";
 const GAGE_RULE = process.env.GAGE || "true";
@@ -115,9 +113,9 @@ router.post('/event', function (req, res, _next) {
 
 router.post('/prewebhook', function (req, res, _next) {
     const appId = req.body.app.id;
-    const jump = false;
+    let jump = false;
     console.log(JSON.stringify(req.body))
-    const metadata = {};
+    let metadata;
     req
         .body
         .events
@@ -148,9 +146,10 @@ router.post('/prewebhook', function (req, res, _next) {
                         }
                         if (GAGE_RULE == 'true') {
                             if (parseInt(phoneNumber) % 2 == 1) {
-                              jump = true;
+                                jump = true;
                             }
                         }
+                        // console.log('check 1')
                         switchboardPassControl(appId, convId, event.payload.message.id, jump, metadata);
                     } else if ((convChannel != 'api:conversations') && (convChannel != 'zd:agentWorkspace')) {
                         if (convSwitchboardName == 'bot') {
@@ -226,7 +225,7 @@ router.post('/conversation/reply/', async function (req, res, _next) {
             .status(422)
             .send({error: 'invalid userId format'});
     } else {
-        const i = 0;
+        let i = 0;
         for (const message of req.body.messages) {
             if (message.type == 'text') {
                 const smoochResponse = await sendToSmooch(userId, appId, convId, message.content);
@@ -323,7 +322,7 @@ function sendToBot(botPayloadJson, username) {
 
 async function sendQuickReplySmooch(userId, appId, convId, messagePayload) {
     // console.log('sendquick to smooch')
-    const messagePost = new SunshineConversationsClient.MessagePost();
+    let messagePost = new SunshineConversationsClient.MessagePost();
     messagePost.author = {
         type: 'business'
         // displayName: BOT_ALIAS
@@ -333,11 +332,11 @@ async function sendQuickReplySmooch(userId, appId, convId, messagePayload) {
         text: 'quickreply'
     }
 
-    const actionObject = {};
-    const interactiveType = '';
-    const bodyText = '';
+    let actionObject = {};
+    let interactiveType = '';
+    let bodyText = '';
     if (messagePayload.template_type == 'text') {
-        const listofButtons = []
+        let listofButtons = []
         interactiveType = 'button';
         messagePayload
             .items
@@ -358,8 +357,8 @@ async function sendQuickReplySmooch(userId, appId, convId, messagePayload) {
         }
 
     } else if (messagePayload.template_type == 'list_reply') {
-        const listofSections = [];
-        const sectionRows = [];
+        let listofSections = [];
+        let sectionRows = [];
         messagePayload
             .items
             .action
@@ -621,7 +620,7 @@ function switchboardPassControl(appId, convId, firstMsgId, jump, metadata) {
     const passControlBody = new SunshineConversationsClient.PassControlBody();
     passControlBody.switchboardIntegration = (jump)
         ? 'zd-agentWorkspace'
-        : '_next';
+        : 'next';
     passControlBody.metadata = {
         // ['dataCapture.systemField.tags']: solvedTag,
         ['first_message_id']: firstMsgId,
