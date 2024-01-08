@@ -119,6 +119,46 @@ router.post('/webhook', function (req, res, next) {
   res.status(200).send({});
 })
 
+router.post('/prewebhook', function (req, res, next) {
+    var appId = req.body.app.id;
+    req.body.events.forEach(event => {
+      if (event.type != 'conversation:read') {
+        var convChannel = event.payload.message.source.type;
+        var convIntegrationId = event.payload.message.source.integrationId;
+        var convId = event.payload.conversation.id;
+        // taro custom payload untuk tambah tipe user (premium bot a, non bot b)
+        if ('activeSwitchboardIntegration' in event.payload.conversation) {
+          var convSwitchboardName = event.payload.conversation.activeSwitchboardIntegration.name;
+          if (!EXCLUDED_INTG_ID.includes(convIntegrationId)) {
+            console.log(`Inbound SMOOCH User: ${event.payload.message.author.displayName} SW: ${convSwitchboardName} USER_ID: ${event.payload.message.author.userId}_${appId}_${convId}`)
+            // var displayName = event.payload.message.author.displayName;
+            if (convSwitchboardName == 'prebot') {
+              if (BYPASS_ZD == 'true' ) {
+                getClevel(false, {}, event.payload.message.author.userId, appId, convId, event.payload.message.id, false, {tags:''})
+              } else {
+                if (event.payload.message.author.type == "user") {
+                  var messagePayload = event.payload.message;
+                  var userIdForBot = messagePayload.author.userId + '_' + appId + '_' + convId;
+                  let phoneNumber = event.payload.message.source.client.externalId;
+                  getClevelFirst(appId, convId, event.payload.message.id, messagePayload.author.userId, {}, phoneNumber);
+                //   sendToBot(payGen.doGenerateBotPayload(userIdForBot, messagePayload), event.payload.message.author.displayName)
+                }
+              }
+            }
+          } else if ((convChannel != 'api:conversations') && (convChannel != 'zd:agentWorkspace')) {
+            if (convSwitchboardName == 'bot') {
+              if (convChannel != 'officehours') { // 'officehours' means automated messages
+                console.log('-- unregistered account, pass to zd imidiately -- ')
+                getClevel(false, {}, event.payload.message.author.userId, appId, convId, event.payload.message.id, false, {tags:''})
+              }
+            }
+          }
+        }
+      }
+    });
+    res.status(200).send({});
+})
+
 router.post('/conversation/test', function(req, res, next) {
   var chatContent = req.body.text;
   var userId = '5613c341a4da96f98cb3f3a2_6225cb52ebe30d00ef9a2e9a_9be4eb9330540f041f42e755'
@@ -466,6 +506,31 @@ function finalSendtoSmooch(userId, appId, convId, messagePost) {
   }
 }
 
+function switchboardPassControlFirst(appId, convId, firstMsgId, userId = null, cLevel, bypass) {
+    // var solvedTag = (solved) ? `solved_by_bot ${cLevel}` : `unsolved ${cLevel}`;
+    // solvedTag = (answerByBot) ? `${solvedTag} answer_by_bot` : solvedTag
+    // solvedTag = (handoverBody.tags.includes('user-idle')) ? `${solvedTag} user-idle` : solvedTag
+  
+    var apiInstance = new SunshineConversationsClient.SwitchboardActionsApi();
+    var passControlBody = new SunshineConversationsClient.PassControlBody();
+    passControlBody.switchboardIntegration = (bypass) ? 'ZD': 'next';
+    if (bypass) {
+        passControlBody.metadata = {
+          ['dataCapture.systemField.tags']: cLevel,
+          ['dataCapture.ticketField.10051072301335']: convId,
+          ['dataCapture.ticketField.10209017032855']: userId
+        }
+        passControlBody.metadata[['first_message_id']] = firstMsgId
+    }
+  
+    console.log('passing control chat', passControlBody)
+    apiInstance.passControl(appId, convId, passControlBody).then(function (data) {
+      console.log('API Pass Control called successfully. Returned data: ' + data);
+    }, function (error) {
+      console.log(error)
+    });
+  }
+
 function switchboardPassControl(appId, convId, solved, firstMsgId, userId = null, ticket_fields = {}, cLevel, answerByBot, handoverBody) {
   var solvedTag = (solved) ? `solved_by_bot ${cLevel}` : `unsolved ${cLevel}`;
   solvedTag = (answerByBot) ? `${solvedTag} answer_by_bot` : solvedTag
@@ -504,6 +569,52 @@ function goLogging(status, process, to, message, client, name) {
       client: client
     });
   }
+}
+
+function getClevelFirst (appId, convId, msgId, userId, ticket_fields, phoneNumber) {
+    var clevel = '';
+    var bypass = false;
+      axios(payGen.doGenerateJagoToken(getTokenEndpoint, clientId, clientSecret, headerToken)).then(function(jagoToken){
+        axios(payGen.doGenerateCustomerInfo(`${getCustomerEndpoint}?phoneNumber=%2B${phoneNumber}`, headerToken, jagoToken.data.access_token)).then(function(jagoCustomer) {
+          switch (jagoCustomer.data.data.customerLevel) {
+            case 'Jagoan':
+              clevel = 'lv1'
+              break;
+            case 'Silver Jagoan':
+              clevel = 'lv2'
+              break;
+            case 'Gold Jagoan':
+              clevel = 'lv3'
+              break;
+            case 'Platinum Jagoan':
+              clevel = 'lv4'
+              bypass = true;
+              break;
+            case 'VVIP':
+              clevel = 'lv5';
+              bypass = true;
+              break;
+            default:
+              clevel = 'lv1'
+              break;
+          }
+          if (bypass) {
+            switchboardPassControlFirst(appId, convId, msgId, userId, clevel, bypass);
+          } else {
+            axios(payGen.doGetZdRequester('con-treesdemo', phoneNumber, 'Basic eXVsaXVzLmFndW5nQHRyZWVzc29sdXRpb25zLmNvbTpXM2xjb21lMTIz')).then(function (requester) {
+                // IF VIP TAG, BYPASS=TRUE
+                switchboardPassControlFirst(appId, convId, msgId, userId, clevel, bypass);
+            }).catch(function(requesterErr) {
+                switchboardPassControl(appId, convId, false, msgId, userId, ticket_fields, '', false, {});
+            })
+          }
+        //   switchboardPassControl(appId, convId, solvedByBot, firstMsgId, userId, ticket_fields, clevel, false, handoverBody);
+        }).catch(function(customerErr) {
+        switchboardPassControl(appId, convId, false, msgId, userId, ticket_fields, '', false, {});
+        })
+      }).catch(function(tokenErr) {
+        switchboardPassControl(appId, convId, false, msgId, userId, ticket_fields, '', false, {});
+      })
 }
 
 function getClevel (solvedByBot, ticket_fields, userId, appId, convId, firstMsgId, answerByBot, handoverBody) {

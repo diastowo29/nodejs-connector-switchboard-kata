@@ -13,6 +13,17 @@ const doGenerateAxiosRequest = function(method, url, authCode, jsonPayload){
     return request
 }
 
+const doGetZdRequester = function (domain, phone, auth) {
+  var request = {
+    method: "GET",
+    url: `https://${domain}.zendesk.com/api/v2/search.json?query=type%3Auser%20phone:%22${phone}%22`,
+    headers: {
+        Authorization: auth
+    }
+  }
+  return request
+}
+
 const doGenerateJagoToken = function(url, clientId,  clientSecret, headerToken){
   
   const data = {
@@ -110,5 +121,6 @@ module.exports ={
     doGenerateSmoochPayload,
     doGenerateSampleMsgPayload,
     doGenerateJagoToken,
-    doGenerateCustomerInfo
+    doGenerateCustomerInfo,
+    doGetZdRequester
 }
