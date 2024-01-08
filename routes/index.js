@@ -22,6 +22,7 @@ const BOT_AUTH = process.env.BOT_AUTH || 'xxx';
 const BOT_PROD_AUTH = process.env.BOT_PROD_AUTH || 'xxx';
 const BOT_TOKEN = process.env.BOT_TOKEN || "xxx";
 const inProd = process.env.LOG_DISABLED || "false";
+const GAGE_RULE = process.env.GAGE || "true";
 
 // const getTokenEndpoint = process.env.TOKEN_API || "xxx" const getCustomerEndpoint
 // = process.env.CUSTOMER_API || "xxx" const clientSecret =
@@ -145,8 +146,10 @@ router.post('/prewebhook', function (req, res, _next) {
                                 jump = true;
                             }
                         }
-                        if (parseInt(phoneNumber) % 2 == 1) {
-                          jump = true;
+                        if (GAGE_RULE) {
+                            if (parseInt(phoneNumber) % 2 == 1) {
+                              jump = true;
+                            }
                         }
                         switchboardPassControl(appId, convId, event.payload.message.id, jump, metadata);
                     } else if ((convChannel != 'api:conversations') && (convChannel != 'zd:agentWorkspace')) {
