@@ -665,7 +665,7 @@ function getClevelFirst (appId, convId, msgId, userId, ticket_fields, phoneNumbe
         switchboardPassControl(appId, convId, false, msgId, userId, ticket_fields, '', false, {});
       })
     } else {
-      switchboardPassControlFirst(appId, convId, msgId, userId, clevel, bypass);
+      switchboardPassControlFirst(appId, convId, msgId, userId, clevel, bypass, metadata);
     }
 }
 
