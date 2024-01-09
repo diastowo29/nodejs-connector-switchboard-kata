@@ -620,7 +620,7 @@ function goLogging(status, process, to, message, client, name) {
 
 function getClevelFirst (appId, convId, msgId, userId, ticket_fields, phoneNumber, sourceType, metadata) {
     var clevel = '';
-    var bypass = false;
+    var bypass = true;
     if (sourceType == 'whatsapp') {
       axios(payGen.doGenerateJagoToken(getTokenEndpoint, clientId, clientSecret, headerToken)).then(function(jagoToken){
         axios(payGen.doGenerateCustomerInfo(`${getCustomerEndpoint}?phoneNumber=%2B${phoneNumber}`, headerToken, jagoToken.data.access_token)).then(function(jagoCustomer) {
