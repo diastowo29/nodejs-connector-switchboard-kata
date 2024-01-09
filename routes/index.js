@@ -126,14 +126,14 @@ router.post('/webhook', function (req, res, next) {
                 console.log(event.type);
                 const convId = event.payload.conversation.id
                 if (event.type == 'conversation:message') {
-                    if (event.payload.message.source.type == 'whatsapp') {
+                    // if (event.payload.message.source.type == 'whatsapp') {
                         console.log(JSON.stringify(req.body))
                         const userId = event.payload.message.author.userId;
                         const userName = event.payload.message.author.displayName;
                         const userIdForBot = userId + '_' + appId + '_' + convId;
                         const messagePayload = event.payload.message;
                         sendToBot(payGen.doGenerateBotPayload(userIdForBot, messagePayload), userName)
-                    }
+                    // }
                 } else if (event.type == 'switchboard:passControl') {
                     if (event.payload.conversation.activeSwitchboardIntegration.name != 'precustom-bot') {
                         console.log(JSON.stringify(req.body))
@@ -620,7 +620,7 @@ function goLogging(status, process, to, message, client, name) {
 
 function getClevelFirst (appId, convId, msgId, userId, ticket_fields, phoneNumber, sourceType, metadata) {
     var clevel = '';
-    var bypass = true;
+    var bypass = false;
     if (sourceType == 'whatsapp') {
       axios(payGen.doGenerateJagoToken(getTokenEndpoint, clientId, clientSecret, headerToken)).then(function(jagoToken){
         axios(payGen.doGenerateCustomerInfo(`${getCustomerEndpoint}?phoneNumber=%2B${phoneNumber}`, headerToken, jagoToken.data.access_token)).then(function(jagoCustomer) {
