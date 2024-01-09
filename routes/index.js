@@ -126,14 +126,14 @@ router.post('/webhook', function (req, res, next) {
                 console.log(event.type);
                 const convId = event.payload.conversation.id
                 if (event.type == 'conversation:message') {
-                    // if (event.payload.message.source.type == 'whatsapp') {
+                    if (event.payload.message.source.type != 'api:conversations') {
                         console.log(JSON.stringify(req.body))
                         const userId = event.payload.message.author.userId;
                         const userName = event.payload.message.author.displayName;
                         const userIdForBot = userId + '_' + appId + '_' + convId;
                         const messagePayload = event.payload.message;
                         sendToBot(payGen.doGenerateBotPayload(userIdForBot, messagePayload), userName)
-                    // }
+                    }
                 } else if (event.type == 'switchboard:passControl') {
                     if (event.payload.conversation.activeSwitchboardIntegration.name != 'precustom-bot') {
                         console.log(JSON.stringify(req.body))
