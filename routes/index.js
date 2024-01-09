@@ -141,7 +141,8 @@ router.post('/webhook', function (req, res, next) {
                         const userId = metadata.userid;
                         const userName = metadata.username;
                         const userIdForBot = userId + '_' + appId + '_' + convId;
-                        const message = metadata.message;
+                        const message = metadata.message.content;
+                        console.log('check 1')
                         sendToBot(payGen.doGenerateBotPayload(userIdForBot, message), userName)
                     }
                 }
