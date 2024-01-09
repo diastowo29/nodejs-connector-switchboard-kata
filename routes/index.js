@@ -179,7 +179,7 @@ router.post('/prewebhook', function (req, res, next) {
                     username: messagePayload.author.displayName,
                     userid: messagePayload.author.userId,
                     message: {
-                        content: messagePayload.content
+                        content: messagePayload
                     }
                   }
                   getClevelFirst(appId, convId, event.payload.message.id, messagePayload.author.userId, {}, phoneNumber, convChannel, metadata);
