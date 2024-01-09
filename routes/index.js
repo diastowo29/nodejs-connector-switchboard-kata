@@ -154,6 +154,7 @@ router.post('/webhook', function (req, res, next) {
 
 router.post('/prewebhook', function (req, res, next) {
     var appId = req.body.app.id;
+    console.log(JSON.stringify(req.body))
     let metadata;
     req.body.events.forEach(event => {
       if (event.type != 'conversation:read') {
