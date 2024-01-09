@@ -167,7 +167,7 @@ router.post('/prewebhook', function (req, res, next) {
           if (!EXCLUDED_INTG_ID.includes(convIntegrationId)) {
             console.log(`Inbound SMOOCH User: ${event.payload.message.author.displayName} SW: ${convSwitchboardName} USER_ID: ${event.payload.message.author.userId}_${appId}_${convId}`)
             // var displayName = event.payload.message.author.displayName;
-            if (convSwitchboardName == 'prebot') {
+            if (convSwitchboardName == 'precustom-bot') {
               if (BYPASS_ZD == 'true' ) {
                 getClevel(false, {}, event.payload.message.author.userId, appId, convId, event.payload.message.id, false, {tags:''})
               } else {
