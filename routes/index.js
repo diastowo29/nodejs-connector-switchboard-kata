@@ -660,7 +660,7 @@ function getClevelFirst (appId, convId, msgId, userId, ticket_fields, phoneNumbe
                 bypass = true;
               }
             });
-            switchboardPassControlFirst(appId, convId, msgId, userId, clevel, bypass);
+            switchboardPassControlFirst(appId, convId, msgId, userId, clevel, bypass, metadata);
           }).catch(function(requesterErr) {
             switchboardPassControl(appId, convId, false, msgId, userId, ticket_fields, '', false, {});
           })
