@@ -656,7 +656,7 @@ function getClevelFirst (appId, convId, msgId, userId, ticket_fields, phoneNumbe
         } else {
           axios(payGen.doGetZdRequester('tanyajago1594028889', phoneNumber, `Basic ${ZD_TOKEN}`)).then(function (requester) {
             requester.data.results.forEach(result => {
-              if (result.tags.indexOf('vip') > -1) {
+              if (result.tags.indexOf('vip_customer') > -1) {
                 bypass = true;
               }
             });
