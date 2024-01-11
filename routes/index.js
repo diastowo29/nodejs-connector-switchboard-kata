@@ -145,12 +145,13 @@ router.post('/conversation/reply/', async function (req, res, next) {
   goLogging('info', P_SEND_TO_SMOOCH, req.body.userId, req.body, BOT_CLIENT, "")
   console.log(`Inbound BOT USER_ID: ${req.body.userId}`)
   // console.log('info', P_SEND_TO_SMOOCH, req.body.userId, req.body, BOT_CLIENT)
-  if (userId == undefined || appId == undefined || convId == undefined) {
+  if (userId == undefined || appId == undefined || convId == undefined || req.body.messages == undefined) {
     res.status(422).send({
-      error: 'invalid userId format'
+      error: 'invalid payload format'
     });
   } else {
     let i = 0;
+    // console.log(JSON.stringify(req.body))
     for (const message of req.body.messages) {
         if (message.type == 'text') {
           var smoochResponse = await sendToSmooch(userId, appId, convId, message.content);
