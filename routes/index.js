@@ -306,7 +306,8 @@ function sendToBot(botPayloadJson, username) {
     console.log('Sent to BOT: %s', response.status);
     goLogging('info', P_SEND_TO_BOT, botPayloadJson.sender, botPayloadJson, BOT_CLIENT, username)
   }).catch(function(err){
-    switchboardPassControl(botPayloadJson.sender.split('_')[1], botPayloadJson.sender.split('_')[2], false, null, botPayloadJson.sender.split('_')[0], null, '', false)
+    // switchboardPassControl(botPayloadJson.sender.split('_')[1], botPayloadJson.sender.split('_')[2], false, null, botPayloadJson.sender.split('_')[0], null, '', false)
+    switchboardPassControlFirst(botPayloadJson.sender.split('_')[1], botPayloadJson.sender.split('_')[2], 0, botPayloadJson.sender.split('_')[0], '', true, {});
     goLogging('error', P_SEND_TO_BOT, botPayloadJson.sender, err.response, BOT_CLIENT, username)
   });
 }
@@ -653,7 +654,6 @@ function getClevelFirst (appId, convId, msgId, userId, ticket_fields, phoneNumbe
             clevel = 'lv1'
             break;
         }
-        console.log(clevel);
         if (bypass) {
           switchboardPassControlFirst(appId, convId, msgId, userId, clevel, bypass, metadata);
         } else {
@@ -668,19 +668,19 @@ function getClevelFirst (appId, convId, msgId, userId, ticket_fields, phoneNumbe
             if (requesterErr.response) {
               console.log(requesterErr.response.data);
               console.log(requesterErr.response.status);
-              console.log(requesterErr.response.headers);
             } else {
               console.log(requesterErr.message);
             }
-            switchboardPassControl(appId, convId, false, msgId, userId, ticket_fields, '', false, {});
+            switchboardPassControlFirst(appId, convId, msgId, userId, clevel, bypass, metadata);
+            // switchboardPassControl(appId, convId, false, msgId, userId, ticket_fields, '', false, {});
           })
         }
       //   switchboardPassControl(appId, convId, solvedByBot, firstMsgId, userId, ticket_fields, clevel, false, handoverBody);
       }).catch(function(customerErr) {
-        switchboardPassControl(appId, convId, false, msgId, userId, ticket_fields, '', false, {});
+        switchboardPassControlFirst(appId, convId, msgId, userId, clevel, bypass, metadata);
       })
     }).catch(function(tokenErr) {
-      switchboardPassControl(appId, convId, false, msgId, userId, ticket_fields, '', false, {});
+      switchboardPassControlFirst(appId, convId, msgId, userId, clevel, bypass, metadata);
     })
 }
 
