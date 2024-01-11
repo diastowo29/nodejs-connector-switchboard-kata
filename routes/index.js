@@ -218,8 +218,8 @@ function sendToBot(botPayloadJson, username) {
     console.log('Sent to BOT: %s', response.status);
     goLogging('info', P_SEND_TO_BOT, botPayloadJson.sender, botPayloadJson, BOT_CLIENT, username)
   }).catch(function(err){
-    console.log(err);
     console.log(err.response.status);
+    console.log(err.response.statusText);
     // console.log(err)
     try {
       goLogging('error', P_SEND_TO_BOT, botPayloadJson.sender, err.response.statusText, BOT_CLIENT, username)
