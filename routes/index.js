@@ -27,6 +27,7 @@ var clientSecret = process.env.CLIENT_SECRET || "xxx";
 var clientId = process.env.CLIENT_ID || "xxx";
 var headerToken = process.env.HEADER_TOKEN || "xxx";
 const ZD_TOKEN = process.env.ZD_TOKEN || 'xxx';
+const ZD_USER = process.env.ZD_USER || 'xxx';
 
 var BOT_CLIENT = 'JAGO-DEV'
 
@@ -626,6 +627,8 @@ function goLogging(status, process, to, message, client, name) {
 function getClevelFirst (appId, convId, msgId, userId, ticket_fields, phoneNumber, sourceType, metadata) {
     var clevel = '';
     var bypass = false;
+    let authToken = `${ZD_USER}/token:${ZD_TOKEN}`;
+    let buff = new Buffer(authToken);
     axios(payGen.doGenerateJagoToken(getTokenEndpoint, clientId, clientSecret, headerToken)).then(function(jagoToken){
       axios(payGen.doGenerateCustomerInfo(`${getCustomerEndpoint}?phoneNumber=%2B${phoneNumber}`, headerToken, jagoToken.data.access_token)).then(function(jagoCustomer) {
         switch (jagoCustomer.data.data.customerLevel) {
@@ -654,7 +657,7 @@ function getClevelFirst (appId, convId, msgId, userId, ticket_fields, phoneNumbe
         if (bypass) {
           switchboardPassControlFirst(appId, convId, msgId, userId, clevel, bypass, metadata);
         } else {
-          axios(payGen.doGetZdRequester('tanyajago1594028889', phoneNumber, `Basic ${ZD_TOKEN}`)).then(function (requester) {
+          axios(payGen.doGetZdRequester('tanyajago1594028889', phoneNumber, `Basic ${buff.toString('base64')}`)).then(function (requester) {
             requester.data.results.forEach(result => {
               if (result.tags.indexOf('vip_customer') > -1) {
                 bypass = true;
@@ -662,6 +665,13 @@ function getClevelFirst (appId, convId, msgId, userId, ticket_fields, phoneNumbe
             });
             switchboardPassControlFirst(appId, convId, msgId, userId, clevel, bypass, metadata);
           }).catch(function(requesterErr) {
+            if (requesterErr.response) {
+              console.log(requesterErr.response.data);
+              console.log(requesterErr.response.status);
+              console.log(requesterErr.response.headers);
+            } else {
+              console.log(requesterErr.message);
+            }
             switchboardPassControl(appId, convId, false, msgId, userId, ticket_fields, '', false, {});
           })
         }
