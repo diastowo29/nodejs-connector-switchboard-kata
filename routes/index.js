@@ -222,7 +222,7 @@ function sendToBot(botPayloadJson, username) {
     console.log(err.response.status);
     // console.log(err)
     try {
-      goLogging('error', P_SEND_TO_BOT, botPayloadJson.sender, err.response, BOT_CLIENT, username)
+      goLogging('error', P_SEND_TO_BOT, botPayloadJson.sender, err.response.statusText, BOT_CLIENT, username)
       switchboardPassControl(botPayloadJson.sender.split('_')[1], botPayloadJson.sender.split('_')[2], false, null, botPayloadJson.sender.split('_')[0], {}, '', false, {tags: ''})
     } catch (e) {
       switchboardPassControl(botPayloadJson.sender.split('_')[1], botPayloadJson.sender.split('_')[2], false, null, botPayloadJson.sender.split('_')[0], {}, '', false, {tags: ''})
