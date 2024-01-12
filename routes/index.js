@@ -570,7 +570,7 @@ function switchboardPassControlFirst(appId, convId, firstMsgId, userId = null, c
   
     var apiInstance = new SunshineConversationsClient.SwitchboardActionsApi();
     var passControlBody = new SunshineConversationsClient.PassControlBody();
-    passControlBody.switchboardIntegration = (bypass) ? 'ZD': 'next';
+    passControlBody.switchboardIntegration = (bypass) ? 'zd-agentWorkspace': 'next';
     if (bypass) {
         passControlBody.metadata = {
           ['dataCapture.systemField.tags']: cLevel,
