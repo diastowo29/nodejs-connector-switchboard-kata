@@ -27,7 +27,6 @@ var clientSecret = process.env.CLIENT_SECRET || "xxx";
 var clientId = process.env.CLIENT_ID || "xxx";
 var headerToken = process.env.HEADER_TOKEN || "xxx";
 const ZD_TOKEN = process.env.ZD_TOKEN || 'xxx';
-const ZD_USER = process.env.ZD_USER || 'xxx';
 
 var BOT_CLIENT = 'JAGO-DEV'
 
@@ -628,7 +627,7 @@ function goLogging(status, process, to, message, client, name) {
 function getClevelFirst (appId, convId, msgId, userId, ticket_fields, phoneNumber, sourceType, metadata) {
     var clevel = '';
     var bypass = false;
-    let authToken = `${ZD_USER}/token:${ZD_TOKEN}`;
+    let authToken = ${ZD_TOKEN};
     let buff = new Buffer(authToken);
     axios(payGen.doGenerateJagoToken(getTokenEndpoint, clientId, clientSecret, headerToken)).then(function(jagoToken){
       axios(payGen.doGenerateCustomerInfo(`${getCustomerEndpoint}?phoneNumber=%2B${phoneNumber}`, headerToken, jagoToken.data.access_token)).then(function(jagoCustomer) {
