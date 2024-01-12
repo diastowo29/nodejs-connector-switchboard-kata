@@ -14,7 +14,7 @@ var basicAuth = defaultClient.authentications['basicAuth'];
 var SMOOCH_KEY_ID = process.env.SMOOCH_KEY_ID || "xxx";
 var SMOOCH_KEY_SECRET = process.env.SMOOCH_KEY_SECRET || "xxx";
 var BYPASS_ZD = process.env.BYPASS_ZD || "false";
-var EXCLUDED_INTG_ID = process.env.WA_ACTIVE_ACCOUNT || "62d7a492294f2700f0e3b08c";
+var CHANNEL_ACTIVE_ACCOUNT = process.env.WA_ACTIVE_ACCOUNT || "62d7a492294f2700f0e3b08c";
 var BOT_ALIAS = process.env.BOT_ALIAS || "Bita";
 var BOT_AUTH = process.env.BOT_AUTH || 'xxx';
 var BOT_PROD_AUTH = process.env.BOT_PROD_AUTH || 'xxx';
@@ -460,7 +460,7 @@ function sendFiletoSmooch(userId, appId, convId, messagePayload) {
   return messagePost;
 }
 
-function hcSendCarouseltoSmooch(userId, appId, convId, messagePayload) {
+/* function hcSendCarouseltoSmooch(userId, appId, convId, messagePayload) {
   var messagePost = new SunshineConversationsClient.MessagePost();
   var carouselItems = [
     {
@@ -494,7 +494,7 @@ function hcSendCarouseltoSmooch(userId, appId, convId, messagePayload) {
 
   finalSendtoSmooch(userId, appId, convId, messagePost);
   return messagePost;
-}
+} */
 
 function sendCarouseltoSmooch(userId, appId, convId, messagePayload) {
   // var apiInstance = new SunshineConversationsClient.MessagesApi();
@@ -574,8 +574,8 @@ function switchboardPassControlFirst(appId, convId, firstMsgId, userId = null, c
     if (bypass) {
         passControlBody.metadata = {
           ['dataCapture.systemField.tags']: cLevel,
-          ['dataCapture.ticketField.10051072301335']: convId,
-          ['dataCapture.ticketField.10209017032855']: userId
+          ['dataCapture.ticketField.10530778827415']: convId,
+          ['dataCapture.ticketField.10530780390807']: userId
         }
         passControlBody.metadata[['first_message_id']] = firstMsgId
     } else {
@@ -664,7 +664,7 @@ function getClevelFirst (appId, convId, msgId, userId, ticket_fields, phoneNumbe
         if (bypass) {
           switchboardPassControlFirst(appId, convId, msgId, userId, clevel, bypass, metadata);
         } else {
-          axios(payGen.doGetZdRequester('tanyajago1594028889', phoneNumber, `Basic ${buff.toString('base64')}`)).then(function (requester) {
+          axios(payGen.doGetZdRequester('tanyajago', phoneNumber, `Basic ${buff.toString('base64')}`)).then(function (requester) {
             requester.data.results.forEach(result => {
               if (result.tags.indexOf('vip_customer') > -1) {
                 bypass = true;
