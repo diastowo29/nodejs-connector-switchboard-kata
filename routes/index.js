@@ -151,12 +151,16 @@ router.post('/webhook', function (req, res, next) {
                     if (event.payload.conversation.activeSwitchboardIntegration.name != 'precustom-bot') {
                         console.log(JSON.stringify(req.body))
                         const metadata = JSON.parse(event.payload.metadata.mymeta);
-                        const userId = metadata.userid;
-                        const userName = metadata.username;
-                        const userIdForBot = userId + '_' + appId + '_' + convId;
-                        const message = metadata.message.content;
-                        console.log('check 1')
-                        sendToBot(payGen.doGenerateBotPayload(userIdForBot, message), userName)
+                        try {
+                          const userId = metadata.userid;
+                          const userName = metadata.username;
+                          const userIdForBot = userId + '_' + appId + '_' + convId;
+                          const message = metadata.message.content;
+                          console.log('check 1')
+                          sendToBot(payGen.doGenerateBotPayload(userIdForBot, message), userName)
+                        } catch (e) {
+                          getClevel(false, {}, messagePayload.author.userId, appId, convId, messagePayload.id, false, {tags:''})
+                        }
                     }
                 }
             }
