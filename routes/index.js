@@ -126,6 +126,7 @@ router.post('/webhook', function (req, res, next) {
         .forEach(event => {
             if (event.payload.conversation.activeSwitchboardIntegration.integrationType == 'custom') {
                 console.log(event.type);
+                var convChannel = event.payload.message.source.type;
                 const convId = event.payload.conversation.id
                 if (event.type == 'conversation:message') {
                   var messagePayload = event.payload.message;
@@ -139,7 +140,7 @@ router.post('/webhook', function (req, res, next) {
                           // const messagePayload = messagePayload;
                           sendToBot(payGen.doGenerateBotPayload(userIdForBot, messagePayload), userName)
                         } else if ((convChannel != 'api:conversations') && (convChannel != 'zd:agentWorkspace')) {
-                          if (convSwitchboardName == 'bot') {
+                          if (event.payload.conversation.activeSwitchboardIntegration.name == 'bot') {
                             if (convChannel != 'officehours') { // 'officehours' means automated messages
                               console.log('-- unregistered account, pass to zd imidiately -- ')
                               getClevel(false, {}, messagePayload.author.userId, appId, convId, messagePayload.id, false, {tags:''})
