@@ -159,7 +159,7 @@ router.post('/webhook', function (req, res, next) {
                           console.log('check 1')
                           sendToBot(payGen.doGenerateBotPayload(userIdForBot, message), userName)
                         } catch (e) {
-                          getClevel(false, {}, messagePayload.author.userId, appId, convId, messagePayload.id, false, {tags:''})
+                          getClevel(false, {}, event.payload.message.author.userId, appId, convId, event.payload.message.id, false, {tags:''})
                         }
                     }
                 }
