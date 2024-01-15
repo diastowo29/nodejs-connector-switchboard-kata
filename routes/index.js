@@ -209,7 +209,8 @@ router.post('/prewebhook', function (req, res, next) {
             if (convSwitchboardName == 'precustom-bot') {
               if (convChannel != 'officehours') { // 'officehours' means automated messages
                 console.log('-- unregistered account, pass to zd imidiately -- ')
-                getClevel(false, {}, messagePayload.author.userId, appId, convId, messagePayload.id, false, {tags:''})
+                switchboardPassControlFirst(appId, convId, messagePayload.id, messagePayload.author.userId, '', true, {});
+                    // getClevel(false, {}, messagePayload.author.userId, appId, convId, messagePayload.id, false, {tags:''})
               }
             }
           }
