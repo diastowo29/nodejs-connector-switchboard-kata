@@ -151,8 +151,8 @@ router.post('/webhook', function (req, res, next) {
                 } else if (event.type == 'switchboard:passControl') {
                     if (event.payload.conversation.activeSwitchboardIntegration.name != 'precustom-bot') {
                         console.log(JSON.stringify(req.body))
-                        const metadata = JSON.parse(event.payload.metadata.mymeta);
                         try {
+                          const metadata = JSON.parse(event.payload.metadata.mymeta);
                           const userId = metadata.userid;
                           const userName = metadata.username;
                           const userIdForBot = userId + '_' + appId + '_' + convId;
