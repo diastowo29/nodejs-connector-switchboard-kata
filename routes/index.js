@@ -136,7 +136,7 @@ router.post('/webhook', function (req, res, next) {
                           const userId = messagePayload.author.userId;
                           const userName = messagePayload.author.displayName;
                           const userIdForBot = userId + '_' + appId + '_' + convId;
-                          const messagePayload = messagePayload;
+                          // const messagePayload = messagePayload;
                           sendToBot(payGen.doGenerateBotPayload(userIdForBot, messagePayload), userName)
                         } else if ((convChannel != 'api:conversations') && (convChannel != 'zd:agentWorkspace')) {
                           if (convSwitchboardName == 'bot') {
