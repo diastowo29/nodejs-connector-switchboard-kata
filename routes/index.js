@@ -206,7 +206,7 @@ router.post('/prewebhook', function (req, res, next) {
               }
             }
           } else if ((convChannel != 'api:conversations') && (convChannel != 'zd:agentWorkspace')) {
-            if (convSwitchboardName == 'bot') {
+            if (convSwitchboardName == 'precustom-bot') {
               if (convChannel != 'officehours') { // 'officehours' means automated messages
                 console.log('-- unregistered account, pass to zd imidiately -- ')
                 getClevel(false, {}, messagePayload.author.userId, appId, convId, messagePayload.id, false, {tags:''})
