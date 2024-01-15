@@ -167,8 +167,9 @@ router.post('/webhook', function (req, res, next) {
                             sendToBot(payGen.doGenerateBotPayload(userIdForBot, message), userName)
                           }
                         } catch (e) {
-                          console.log('catch error')
-                          getClevel(false, {}, event.payload.message.author.userId, appId, convId, event.payload.message.id, false, {tags:''})
+                          goLogging('error', 'webhook-passcontrol', '', req.body, BOT_CLIENT, '')
+                          switchboardPassControlFirst(appId, convId, 0, 0, '', true, {});
+                            // getClevel(false, {}, event.payload.message.author.userId, appId, convId, event.payload.message.id, false, {tags:''})
                         }
                     }
                 }
