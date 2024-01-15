@@ -128,13 +128,24 @@ router.post('/webhook', function (req, res, next) {
                 console.log(event.type);
                 const convId = event.payload.conversation.id
                 if (event.type == 'conversation:message') {
-                    if (event.payload.message.source.type != 'api:conversations') {
-                        console.log(JSON.stringify(req.body))
-                        const userId = event.payload.message.author.userId;
-                        const userName = event.payload.message.author.displayName;
-                        const userIdForBot = userId + '_' + appId + '_' + convId;
-                        const messagePayload = event.payload.message;
-                        sendToBot(payGen.doGenerateBotPayload(userIdForBot, messagePayload), userName)
+                  var messagePayload = event.payload.message;
+                    if (messagePayload.source.type != 'api:conversations') {
+                        var convIntegrationId = messagePayload.source.integrationId;
+                        if (CHANNEL_ACTIVE_ACCOUNT.includes(convIntegrationId)) {
+                          console.log(JSON.stringify(req.body))
+                          const userId = messagePayload.author.userId;
+                          const userName = messagePayload.author.displayName;
+                          const userIdForBot = userId + '_' + appId + '_' + convId;
+                          const messagePayload = messagePayload;
+                          sendToBot(payGen.doGenerateBotPayload(userIdForBot, messagePayload), userName)
+                        } else if ((convChannel != 'api:conversations') && (convChannel != 'zd:agentWorkspace')) {
+                          if (convSwitchboardName == 'bot') {
+                            if (convChannel != 'officehours') { // 'officehours' means automated messages
+                              console.log('-- unregistered account, pass to zd imidiately -- ')
+                              getClevel(false, {}, messagePayload.author.userId, appId, convId, messagePayload.id, false, {tags:''})
+                            }
+                          }
+                        }
                     }
                 } else if (event.type == 'switchboard:passControl') {
                     if (event.payload.conversation.activeSwitchboardIntegration.name != 'precustom-bot') {
