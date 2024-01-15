@@ -138,7 +138,11 @@ router.post('/webhook', function (req, res, next) {
                           const userName = messagePayload.author.displayName;
                           const userIdForBot = userId + '_' + appId + '_' + convId;
                           // const messagePayload = messagePayload;
-                          sendToBot(payGen.doGenerateBotPayload(userIdForBot, messagePayload), userName)
+                          if (BYPASS_ZD == 'true' ) {
+                            switchboardPassControlFirst(appId, convId, messagePayload.id, userId, '', true, {});
+                          } else {
+                            sendToBot(payGen.doGenerateBotPayload(userIdForBot, messagePayload), userName)
+                          }
                         } else if ((convChannel != 'api:conversations') && (convChannel != 'zd:agentWorkspace')) {
                           if (event.payload.conversation.activeSwitchboardIntegration.name == 'bot') {
                             if (convChannel != 'officehours') { // 'officehours' means automated messages
@@ -157,7 +161,11 @@ router.post('/webhook', function (req, res, next) {
                           const userName = metadata.username;
                           const userIdForBot = userId + '_' + appId + '_' + convId;
                           const message = metadata.message.content;
-                          sendToBot(payGen.doGenerateBotPayload(userIdForBot, message), userName)
+                          if (BYPASS_ZD == 'true' ) {
+                            switchboardPassControlFirst(appId, convId, message.id, userId, '', true, {});
+                          } else {
+                            sendToBot(payGen.doGenerateBotPayload(userIdForBot, message), userName)
+                          }
                         } catch (e) {
                           console.log('catch error')
                           getClevel(false, {}, event.payload.message.author.userId, appId, convId, event.payload.message.id, false, {tags:''})
@@ -189,7 +197,7 @@ router.post('/prewebhook', function (req, res, next) {
             // var displayName = messagePayload.author.displayName;
             if (convSwitchboardName == 'precustom-bot') {
               if (BYPASS_ZD == 'true' ) {
-                getClevel(false, {}, messagePayload.author.userId, appId, convId, messagePayload.id, false, {tags:''})
+                switchboardPassControlFirst(appId, convId, messagePayload.id, messagePayload.author.userId, '', true, {});
               } else {
                 if (messagePayload.author.type == "user") {
                   // var userIdForBot = messagePayload.author.userId + '_' + appId + '_' + convId;
@@ -201,12 +209,12 @@ router.post('/prewebhook', function (req, res, next) {
                         content: messagePayload
                     }
                   }
+                  goLogging('info', 'prewebhook', messagePayload.author.userId, messagePayload, BOT_CLIENT, messagePayload.author.displayName)
                   if (convChannel == 'whatsapp') {
                     getClevelFirst(appId, convId, messagePayload.id, messagePayload.author.userId, {}, phoneNumber, convChannel, metadata);
                   } else {
                     switchboardPassControlFirst(appId, convId, messagePayload.id, messagePayload.author.userId, '', false, metadata);
                   }
-                //   sendToBot(payGen.doGenerateBotPayload(userIdForBot, messagePayload), messagePayload.author.displayName)
                 }
               }
             }
