@@ -126,12 +126,12 @@ router.post('/webhook', function (req, res, next) {
         .forEach(event => {
             if (event.payload.conversation.activeSwitchboardIntegration.integrationType == 'custom') {
                 console.log(event.type);
-                var convChannel = event.payload.message.source.type;
                 const convId = event.payload.conversation.id
                 if (event.type == 'conversation:message') {
                   var messagePayload = event.payload.message;
                     if (messagePayload.source.type != 'api:conversations') {
                         var convIntegrationId = messagePayload.source.integrationId;
+                        var convChannel = event.payload.message.source.type;
                         if (CHANNEL_ACTIVE_ACCOUNT.includes(convIntegrationId)) {
                           console.log(JSON.stringify(req.body))
                           const userId = messagePayload.author.userId;
@@ -157,9 +157,9 @@ router.post('/webhook', function (req, res, next) {
                           const userName = metadata.username;
                           const userIdForBot = userId + '_' + appId + '_' + convId;
                           const message = metadata.message.content;
-                          console.log('check 1')
                           sendToBot(payGen.doGenerateBotPayload(userIdForBot, message), userName)
                         } catch (e) {
+                          console.log('catch error')
                           getClevel(false, {}, event.payload.message.author.userId, appId, convId, event.payload.message.id, false, {tags:''})
                         }
                     }
