@@ -127,6 +127,10 @@ router.post('/prewebhook', function (req, res, _next) {
                 if ('activeSwitchboardIntegration' in event.payload.conversation) {
                     const convSwitchboardName = event.payload.conversation.activeSwitchboardIntegration.integrationType;
                     // console.log(CHANNEL_ACTIVE_ACCOUNT); console.log(convIntegrationId)
+                    if ((BYPASS_ZD == 'true')) {
+                      switchboardPassControl(appId, convId, event.payload.message.id, true, {});
+                      // jump = true;
+                  } else {
                     if (CHANNEL_ACTIVE_ACCOUNT.includes(convIntegrationId)) {
                         console.log(
                             `Inbound SMOOCH User: ${event.payload.message.author.displayName} SW: ${convSwitchboardName} USER_ID: ${event.payload.message.author.userId}_${appId}_${convId}`
@@ -159,6 +163,8 @@ router.post('/prewebhook', function (req, res, _next) {
                             }
                         }
                     }
+
+                  }
                 }
             }
         });
