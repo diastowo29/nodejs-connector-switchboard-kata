@@ -631,6 +631,19 @@ function getClevelFirst (appId, convId, msgId, userId, ticket_fields, phoneNumbe
     let buff = new Buffer(authToken);
     axios(payGen.doGenerateJagoToken(getTokenEndpoint, clientId, clientSecret, headerToken)).then(function(jagoToken){
       axios(payGen.doGenerateCustomerInfo(`${getCustomerEndpoint}?phoneNumber=%2B${phoneNumber}`, headerToken, jagoToken.data.access_token)).then(function(jagoCustomer) {
+        try {
+          let activationTs = jagoCustomer.data.data.firstActiveTimestamp;
+          console.log(activationTs);
+          const givenDate = new Date(activationTs);
+          const today = new Date();
+          const differenceMs = today - givenDate;
+          const daysDifference = Math.floor(differenceMs / (1000 * 60 * 60 * 24));
+          console.log(givenDate);
+          console.log(today);
+          console.loh(daysDifference);
+        } catch (e) {
+          console.log(e);
+        }
         switch (jagoCustomer.data.data.customerLevel) {
           case 'Jagoan':
             clevel = 'lv1'
@@ -699,19 +712,6 @@ function getClevel (solvedByBot, ticket_fields, userId, appId, convId, firstMsgI
       var clevel = '';
       axios(payGen.doGenerateJagoToken(getTokenEndpoint, clientId, clientSecret, headerToken)).then(function(jagoToken){
         axios(payGen.doGenerateCustomerInfo(`${getCustomerEndpoint}?phoneNumber=%2B${phoneNumber}`, headerToken, jagoToken.data.access_token)).then(function(jagoCustomer) {
-          try {
-            let activationTs = jagoCustomer.data.data.firstActiveTimestamp;
-            console.log(activationTs);
-            const givenDate = new Date(activationTs);
-            const today = new Date();
-            const differenceMs = today - givenDate;
-            const daysDifference = Math.floor(differenceMs / (1000 * 60 * 60 * 24));
-            console.log(givenDate);
-            console.log(today);
-            console.loh(daysDifference);
-          } catch (e) {
-            console.log(e);
-          }
           switch (jagoCustomer.data.data.customerLevel) {
             case 'Jagoan':
               clevel = 'lv1'
