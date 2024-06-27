@@ -640,7 +640,7 @@ function getClevelFirst (appId, convId, msgId, userId, ticket_fields, phoneNumbe
           const daysDifference = Math.floor(differenceMs / (1000 * 60 * 60 * 24));
           console.log(givenDate);
           console.log(today);
-          console.loh(daysDifference);
+          console.log(daysDifference);
         } catch (e) {
           console.log(e);
         }
