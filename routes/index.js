@@ -651,6 +651,7 @@ function getClevelFirst (appId, convId, msgId, userId, ticket_fields, phoneNumbe
           case 'Gold Jagoan':
             clevel = 'lv3'
             if (daysDifference < 180) {
+              clevel = 'lv3 u6month';
               bypass = true;
             }
             break;
