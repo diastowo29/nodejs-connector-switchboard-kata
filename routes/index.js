@@ -27,7 +27,6 @@ var clientSecret = process.env.CLIENT_SECRET || "xxx";
 var clientId = process.env.CLIENT_ID || "xxx";
 var headerToken = process.env.HEADER_TOKEN || "xxx";
 const ZD_TOKEN = process.env.ZD_TOKEN || 'xxx';
-const ZD_USER = process.env.ZD_USER || 'xxx';
 
 var BOT_CLIENT = 'JAGO-PROD'
 
@@ -665,6 +664,16 @@ function getClevelFirst (appId, convId, msgId, userId, ticket_fields, phoneNumbe
     let buff = new Buffer(authToken);
     axios(payGen.doGenerateJagoToken(getTokenEndpoint, clientId, clientSecret, headerToken)).then(function(jagoToken){
       axios(payGen.doGenerateCustomerInfo(`${getCustomerEndpoint}?phoneNumber=%2B${phoneNumber}`, headerToken, jagoToken.data.access_token)).then(function(jagoCustomer) {
+        let daysDifference = 190;
+        try {
+          let activationTs = jagoCustomer.data.data.firstActiveTimestamp;
+          const givenDate = new Date(activationTs);
+          const today = new Date();
+          const differenceMs = today - givenDate;
+          daysDifference = Math.floor(differenceMs / (1000 * 60 * 60 * 24));
+         } catch (e) {
+          console.log(e);
+         }
         switch (jagoCustomer.data.data.customerLevel) {
           case 'Jagoan':
             clevel = 'lv1'
@@ -674,6 +683,10 @@ function getClevelFirst (appId, convId, msgId, userId, ticket_fields, phoneNumbe
             break;
           case 'Gold Jagoan':
             clevel = 'lv3'
+            if (daysDifference < 180) {
+              clevel = 'lv3 u6month';
+              bypass = true;
+            }
             break;
           case 'Platinum Jagoan':
             clevel = 'lv4'
